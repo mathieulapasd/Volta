@@ -1,0 +1,12 @@
+---
+globs: app/**/*
+description: Next.js conventions; SSR and Server Components by default
+---
+
+# Next.js SSR-first conventions
+
+- Prefer Server Components and SSR by default; only add `"use client"` when interaction or browser-only APIs are required.
+- Co-locate server actions with routes where appropriate; keep them type-safe.
+- Consider streaming and Suspense for progressive rendering.
+- Use path alias `@/*` for imports (see [`tsconfig.json`](mdc:tsconfig.json)).
+

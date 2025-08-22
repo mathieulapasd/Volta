@@ -1,34 +1,112 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
   "files": {
-    "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+    "ignoreUnknown": false,
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/database.types.ts",
+      "!**/package.json",
+      "!**/.vercel"
+    ]
   },
   "formatter": {
     "enabled": true,
+    "formatWithErrors": false,
     "indentStyle": "space",
-    "indentWidth": 2
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 120,
+    "attributePosition": "auto"
   },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
-    },
-    "domains": {
-      "next": "recommended",
-      "react": "recommended"
-    }
-  },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "on"
+      "recommended": true,
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "off",
+          "options": {
+            "maxAllowedComplexity": 50
+          }
+        },
+        "noUselessCatch": "error",
+        "noUselessStringConcat": "error",
+        "noUselessUndefinedInitialization": "error",
+        "noVoid": "error",
+        "useDateNow": "error"
+      },
+      "correctness": {
+        "noConstantMathMinMaxClamp": "error",
+        "noNodejsModules": "error",
+        "noUndeclaredDependencies": "error",
+        "noUnusedFunctionParameters": "warn",
+        "noUnusedImports": "warn",
+        "noUnusedVariables": "warn",
+        "noUnusedPrivateClassMembers": "warn",
+        "useHookAtTopLevel": "error",
+        "noInvalidBuiltinInstantiation": "error",
+        "noUnknownTypeSelector": "off",
+        "noUnknownPseudoElement": "off"
+      },
+      "nursery": {
+        "useExplicitType": "off",
+        "noSecrets": "off",
+        "useSortedClasses": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {
+            "attributes": ["classList"],
+            "functions": ["clsx", "cva", "tw"]
+          }
+        }
+      },
+      "style": {
+        "noImplicitBoolean": "off",
+        "noDefaultExport": "off",
+        "useNamingConvention": "off",
+        "useFilenamingConvention": "off",
+        "noNamespace": "off",
+        "noParameterAssign": "warn",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error",
+        "useArrayLiterals": "error",
+        "useComponentExportOnlyModules": "off",
+        "useConsistentCurlyBraces": "off",
+        "noProcessEnv": "off"
+      },
+      "suspicious": {
+        "noReactSpecificProps": "off",
+        "noConsole": "off",
+        "noDocumentCookie": "off"
+      },
+      "performance": {
+        "noImgElement": "off",
+        "noNamespaceImport": "off"
       }
     }
-  }
+  },
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "es5",
+      "semicolons": "always",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "quoteStyle": "double",
+      "attributePosition": "auto"
+    }
+  },
+  "overrides": [{ "includes": ["**/*.json"] }]
 }

@@ -1,0 +1,16 @@
+---
+globs: *.ts,*.tsx
+description: Labeled console logs for clarity
+---
+
+# Logging
+
+- Always label logs with a clear title to separate entries.
+
+Example:
+```ts
+console.log("myVariable", myVariable);
+```
+
+- Keep logs minimal in committed code; remove noisy debug logs before merging.
+

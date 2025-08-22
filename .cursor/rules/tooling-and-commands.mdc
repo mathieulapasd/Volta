@@ -1,0 +1,18 @@
+---
+alwaysApply: true
+description: Tooling, package manager, and canonical commands
+---
+
+# Tooling and Commands
+
+- Package manager: Bun. Use only `bun` for installs and scripts.
+
+Canonical scripts (see [`package.json`](mdc:package.json)):
+- Dev: `bun run dev`
+- Build: `bun run build`
+- Start: `bun run start`
+- Lint: `bun run lint` (Biome)
+- Format: `bun run format` (Biome write)
+
+Do not use npm, pnpm, or yarn.
+

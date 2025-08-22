@@ -1,0 +1,27 @@
+---
+globs: *.ts,*.tsx
+description: Code style rules layered on Biome; enforce curly braces and breathing space
+---
+
+# Code Style
+
+Biome is the source of truth for formatting and linting. See [`biome.json`](mdc:biome.json) for specifics.
+
+Additional enforced conventions:
+
+- Always use curly braces for conditionals and loops. No single-line `if` without `{}`.
+- Insert a blank line between unrelated logical blocks to improve readability (e.g., declarations, then blank line, then `return`).
+- Prefer early returns to reduce nesting; keep components and functions small and focused.
+- Keep imports organized; remove unused imports and variables.
+
+Tailwind and shadcn:
+- Use shadcn/ui primitives under `components/ui/`.
+- Keep Tailwind class lists readable; consider `clsx` or `cva` for composition.
+
+DRY and refactoring:
+- Avoid duplicating logic. Extract reusable helpers in `lib/` when patterns repeat.
+- Prefer small, composable utilities over copy/paste across components and server code.
+
+React components:
+- Prefer default export for components (e.g., `export default function ComponentName() { ... }`).
+

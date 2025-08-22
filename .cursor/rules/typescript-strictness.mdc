@@ -1,0 +1,13 @@
+---
+globs: *.ts,*.tsx
+description: Strong TypeScript typing; avoid any; use precise types and validation
+---
+
+# TypeScript Strictness
+
+- `strict` is enabled (see [`tsconfig.json`](mdc:tsconfig.json)); keep it that way.
+- Avoid `any`. Use precise types, `unknown` with narrowing, or generics.
+- Add explicit return types for exported functions and React components.
+- Use `zod` for runtime validation when crossing trust boundaries.
+- Prefer server-first data handling; type server actions and route handlers carefully.
+

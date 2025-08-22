@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+description: High-level project overview, structure, and core conventions for Email Builder CRM
+---
+
+# Project Overview and Structure
+
+- Single Next.js app (App Router, Next 15). Prefer Server Components and SSR by default.
+- UI via shadcn/ui and Tailwind CSS v4. Composition over deep prop drilling.
+- Strong TypeScript typing; avoid `any` entirely.
+- Package manager is Bun; use Bun for all commands and installs.
+
+Key configs:
+- [`package.json`](mdc:package.json)
+- [`tsconfig.json`](mdc:tsconfig.json)
+- [`biome.json`](mdc:biome.json)
+
+Core directories:
+- `app/` — routes, layouts, server actions, and Server Components by default
+- `components/` — UI components (prefer shadcn/ui primitives and Tailwind)
+- `lib/` — utilities, schemas, helper modules
+
+Import alias:
+- Use `@/*` for absolute imports (see `compilerOptions.paths` in [`tsconfig.json`](mdc:tsconfig.json)).
+
