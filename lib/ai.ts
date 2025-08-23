@@ -107,49 +107,60 @@ export async function sendMessage(
             id: "header-title",
             type: "text",
             selector: '[data-id="header-title"]',
-            editable: ["text", "color"],
+            editable: ["text", "color", "fontSize", "fontWeight", "textAlign", "lineHeight", "padding"],
             label: "Titre du header",
           },
           {
             id: "header-subtitle",
             type: "text",
             selector: '[data-id="header-subtitle"]',
-            editable: ["text", "color"],
+            editable: ["text", "color", "fontSize", "fontWeight", "textAlign", "lineHeight", "padding"],
             label: "Sous-titre du header",
           },
           {
             id: "hero-image",
             type: "image",
             selector: '[data-id="hero-image"]',
-            editable: ["src", "alt"],
+            editable: ["src", "alt", "width", "height", "borderRadius"],
             label: "Image principale",
           },
           {
             id: "content-title",
             type: "text",
             selector: '[data-id="content-title"]',
-            editable: ["text", "color"],
+            editable: ["text", "color", "fontSize", "fontWeight", "textAlign", "lineHeight", "padding"],
             label: "Titre du contenu",
           },
           {
             id: "content-text",
             type: "text",
             selector: '[data-id="content-text"]',
-            editable: ["text", "color"],
+            editable: ["text", "color", "fontSize", "fontWeight", "textAlign", "lineHeight", "padding"],
             label: "Texte du contenu",
           },
           {
             id: "cta-button",
             type: "button",
             selector: '[data-id="cta-button"]',
-            editable: ["text", "href", "bgcolor"],
+            editable: [
+              "text",
+              "href",
+              "target",
+              "bgcolor",
+              "color",
+              "fontWeight",
+              "textAlign",
+              "fontSize",
+              "padding",
+              "borderRadius",
+            ],
             label: "Bouton d'appel à l'action",
           },
           {
             id: "footer-text",
             type: "text",
             selector: '[data-id="footer-text"]',
-            editable: ["text", "color"],
+            editable: ["text", "color", "fontSize", "fontWeight", "textAlign", "lineHeight", "padding"],
             label: "Texte du pied de page",
           },
         ],
@@ -184,23 +195,3 @@ Vous pouvez survoler n'importe quel élément dans la prévisualisation pour l'�
     tokenCount,
   }
 }
-
-/* Sample emit_email_draft payload for testing:
-{
-  "html_inline": "<table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"margin: 0; padding: 0;\"><tr><td style=\"padding: 0;\"><div style=\"max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;\"><div style=\"display: none; font-size: 1px; color: #fefefe; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;\">Your weekly newsletter is here!</div><table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding: 40px 20px; text-align: center; background-color: #f8f9fa;\"><h1 data-id=\"header-title\" style=\"margin: 0; font-size: 28px; font-weight: bold; color: #1a1a1a;\">Weekly Newsletter</h1></td></tr></table></div></td></tr></table>",
-  "assets": [
-    { "id": "hero-1", "filename": "hero-1.jpg", "mime": "image/jpeg", "source": "data:image/jpeg;base64,...", "alt": "Newsletter hero", "width": 600, "height": 300 }
-  ],
-  "manifest": {
-    "blocks": [
-      {
-        "id": "header-title",
-        "type": "text",
-        "selector": "[data-id='header-title']",
-        "editable": ["text", "color"],
-        "label": "Header Title"
-      }
-    ]
-  }
-}
-*/

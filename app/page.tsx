@@ -13,7 +13,7 @@ export default async function Home() {
 
   return (
     <>
-      <main className="flex h-[calc(100vh-39px)] bg-background">
+      <main className="flex h-[calc(100vh-50px)] bg-background">
         <EmailBuilder defaultLayout={defaultLayout} />
       </main>
 

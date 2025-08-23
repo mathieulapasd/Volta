@@ -1,6 +1,22 @@
 import { z } from "zod"
 
-const attributeEnum = z.enum(["text", "src", "href", "alt", "bgcolor", "color"]);
+const attributeEnum = z.enum([
+  "text",
+  "src",
+  "href",
+  "alt",
+  "bgcolor",
+  "color",
+  "width",
+  "height",
+  "target",
+  "fontSize",
+  "fontWeight",
+  "textAlign",
+  "lineHeight",
+  "padding",
+  "borderRadius",
+]);
 
 export const emailMessageSchema = z.object({
   id: z.string(),

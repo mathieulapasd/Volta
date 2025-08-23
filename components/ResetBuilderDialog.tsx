@@ -45,7 +45,7 @@ export default function ResetBuilderDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Réinitialiser le builder ?</AlertDialogTitle>
+          <AlertDialogTitle>Réinitialiser ?</AlertDialogTitle>
           <AlertDialogDescription>
             Cette action va effacer l'e-mail actuel, les modifications et l'historique des messages.
           </AlertDialogDescription>

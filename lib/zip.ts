@@ -9,6 +9,7 @@ export function estimateZipSize(draft: EmailDraft): number {
     if (asset.source.startsWith('data:')) {
       // Rough estimate: base64 is ~1.37x larger than binary
       const base64Data = asset.source.split(',')[1];
+
       size += base64Data ? base64Data.length * 0.73 : 0;
     } else {
       // Estimate for remote images (rough guess)
@@ -32,7 +33,8 @@ export async function createEmailZip(draft: EmailDraft, edits: EditOp[], assets:
 
   edits.forEach((edit) => {
     const element = doc.querySelector(`[data-id="${edit.id}"]`);
-    if (!element) return;
+
+    if (!element) { return; }
 
     if (edit.kind === "setText") {
       element.textContent = edit.value;

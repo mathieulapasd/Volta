@@ -4,9 +4,12 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { setCookie } from "@/lib/utils";
 import ChatPane from "./ChatPane";
 import PreviewPane from "./PreviewPane";
+import { useDraftStore } from "@/lib/store/useDraftStore";
 
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
   let t: number | undefined;
+
+  const hasHydrated = useDraftStore((s) => s._hasHydrated);
 
   const onLayout = (sizes: number[]) => {
     if (t) {
@@ -17,6 +20,10 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
       setCookie("react-resizable-panels:layout", sizes);
     }, 150);
   };
+
+  if (!hasHydrated) {
+    return null;
+  }
 
   return (
     <ResizablePanelGroup direction="horizontal" onLayout={onLayout}>

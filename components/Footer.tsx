@@ -32,8 +32,7 @@ export default function Footer() {
             <>
               <Separator orientation="vertical" className="h-4" />
               <span>
-                {edits.length} modification{edits.length !== 1 ? "s" : ""} non sauvegardée
-                {edits.length !== 1 ? "s" : ""}
+                {edits.length} modification{edits.length !== 1 ? "s" : ""} en cours
               </span>
             </>
           )}
@@ -47,14 +46,8 @@ export default function Footer() {
             </>
           )}
         </div>
-
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:inline">Modèles d'e-mail prêts pour la production avec support CID</span>
-          <Badge variant="outline" className="text-xs">
-            v0.1.0
-          </Badge>
-          <ResetBuilderDialog />
-        </div>
+      
+        <ResetBuilderDialog />
       </div>
     </div>
   );

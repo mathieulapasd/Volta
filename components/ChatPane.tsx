@@ -13,6 +13,7 @@ import type { EmailMessage } from "@/lib/schemas";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { cn } from "@/lib/utils";
+import { Badge } from "./ui/badge";
 
 export default function ChatPane() {
   const assets = useDraftStore((s) => s.assets);
@@ -144,9 +145,12 @@ export default function ChatPane() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-border border-b p-4">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <h1 className="font-semibold text-xl">Générateur d'e-mail</h1>
-          <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div>
+          <Badge variant="outline" className="text-xs">
+            v0.1.0
+          </Badge>
+          {/* <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div> */}
         </div>
 
         {/* Temperature Control */}
