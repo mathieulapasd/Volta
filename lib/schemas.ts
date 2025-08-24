@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 const attributeEnum = z.enum([
   "text",
@@ -23,7 +23,7 @@ export const emailMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.string(),
   timestamp: z.iso.datetime(),
-})
+});
 
 export const emailAssetSchema = z.object({
   id: z.string(),
@@ -33,7 +33,7 @@ export const emailAssetSchema = z.object({
   alt: z.string().optional(),
   width: z.number().optional(),
   height: z.number().optional(),
-})
+});
 
 export const emailBlockSchema = z.object({
   id: z.string(),
@@ -41,7 +41,7 @@ export const emailBlockSchema = z.object({
   selector: z.string(), // CSS selector using [data-id]
   editable: z.array(attributeEnum),
   label: z.string().optional(),
-})
+});
 
 export const emailDraftSchema = z.object({
   html_inline: z.string(),
@@ -49,7 +49,7 @@ export const emailDraftSchema = z.object({
   manifest: z.object({
     blocks: z.array(emailBlockSchema),
   }),
-})
+});
 
 export const editOpSchema = z.discriminatedUnion("kind", [
   z.object({
@@ -63,11 +63,11 @@ export const editOpSchema = z.discriminatedUnion("kind", [
     name: attributeEnum.exclude(["text"]),
     value: z.string(),
   }),
-])
+]);
 
-export type EmailMessage = z.infer<typeof emailMessageSchema>
-export type EmailAsset = z.infer<typeof emailAssetSchema>
-export type EmailBlock = z.infer<typeof emailBlockSchema>
-export type EmailDraft = z.infer<typeof emailDraftSchema>
-export type EditOp = z.infer<typeof editOpSchema>
-export type AttributeName = z.infer<typeof attributeEnum>
+export type EmailMessage = z.infer<typeof emailMessageSchema>;
+export type EmailAsset = z.infer<typeof emailAssetSchema>;
+export type EmailBlock = z.infer<typeof emailBlockSchema>;
+export type EmailDraft = z.infer<typeof emailDraftSchema>;
+export type EditOp = z.infer<typeof editOpSchema>;
+export type AttributeName = z.infer<typeof attributeEnum>;

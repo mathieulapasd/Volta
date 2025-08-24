@@ -22,7 +22,6 @@ export default function ChatPane() {
 
   const messages = useChatStore((s) => s.messages);
   const appendMessage = useChatStore((s) => s.appendMessage);
-  const tokenCount = useChatStore((s) => s.tokenCount);
   const incrementTokens = useChatStore((s) => s.incrementTokens);
 
   const [input, setInput] = useState("");

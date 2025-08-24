@@ -33,7 +33,11 @@ function writeStyleMap(element: Element, map: Map<string, string>): void {
   element.setAttribute("style", style);
 }
 
-export function applyAttributeEditToElement(element: Element, edit: Extract<EditOp, { kind: "setAttr" }>, assets?: EmailAsset[]): void {
+export function applyAttributeEditToElement(
+  element: Element,
+  edit: Extract<EditOp, { kind: "setAttr" }>,
+  assets?: EmailAsset[]
+): void {
   if (edit.name === "src" && element.tagName === "IMG" && assets) {
     const asset = assets.find((a) => a.source === edit.value || a.id === edit.value);
 
@@ -212,8 +216,8 @@ export function getCurrentValue(element: Element, attribute: string): string {
   }
 
   if (attribute === "fontWeight") {
-    let style = element.getAttribute("style") || "";
-    let match = style.match(/font-weight:\s*([^;]+)/);
+    const style = element.getAttribute("style") || "";
+    const match = style.match(/font-weight:\s*([^;]+)/);
 
     let val = match ? match[1].trim() : "";
     if (!val) {

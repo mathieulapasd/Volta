@@ -1,28 +1,28 @@
-import type { EmailDraft } from "./schemas"
+import type { EmailDraft } from "./schemas";
 
 interface AIResponse {
-  content: string
-  tokenCount: number
-  draft?: EmailDraft
+  content: string;
+  tokenCount: number;
+  draft?: EmailDraft;
 }
 
 // Mock AI response - replace with real AI SDK integration
 export async function sendMessage(
   message: string,
-  temperature: number,
-  assets: EmailDraft["assets"],
+  _temperature: number,
+  assets: EmailDraft["assets"]
 ): Promise<AIResponse> {
   // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000))
+  await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
 
   // Mock token counting
-  const tokenCount = Math.floor(message.length / 4) + Math.floor(Math.random() * 100)
+  const tokenCount = Math.floor(message.length / 4) + Math.floor(Math.random() * 100);
 
   // Check if this looks like an email generation request
   const isEmailRequest =
     message.toLowerCase().includes("email") ||
     message.toLowerCase().includes("newsletter") ||
-    message.toLowerCase().includes("template")
+    message.toLowerCase().includes("template");
 
   if (isEmailRequest) {
     // Generate a sample email draft
@@ -149,7 +149,6 @@ export async function sendMessage(
               "bgcolor",
               "color",
               "fontWeight",
-              "textAlign",
               "fontSize",
               "padding",
               "borderRadius",
@@ -165,7 +164,7 @@ export async function sendMessage(
           },
         ],
       },
-    }
+    };
 
     return {
       content: `J'ai créé un template de newsletter professionnel pour vous! L'e-mail inclut:
@@ -179,7 +178,7 @@ export async function sendMessage(
 Vous pouvez survoler n'importe quel élément dans la prévisualisation pour l'éditer. Le template utilise un layout basé sur les tables pour la compatibilité maximale avec les clients e-mail et inclut des fonctionnalités d'accessibilité appropriées.`,
       tokenCount,
       draft: sampleDraft,
-    }
+    };
   }
 
   // Regular chat response
@@ -188,10 +187,10 @@ Vous pouvez survoler n'importe quel élément dans la prévisualisation pour l'�
     "Quel type d'e-mail recherchez-vous? Une newsletter, un e-mail promotionnel, un message de bienvenue, ou autre chose?",
     "Je peux vous aider à créer différents types d'e-mails. Quel est le but et la cible de votre e-mail?",
     "Fournissez-moi plus de détails sur vos besoins d'e-mail et je générerai un template personnalisé pour vous.",
-  ]
+  ];
 
   return {
     content: responses[Math.floor(Math.random() * responses.length)],
     tokenCount,
-  }
+  };
 }

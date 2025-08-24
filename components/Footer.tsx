@@ -2,7 +2,6 @@
 
 import ResetBuilderDialog from "@/components/ResetBuilderDialog";
 import { useDraftStore } from "@/lib/store/useDraftStore";
-import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 
 export default function Footer() {
@@ -46,7 +45,7 @@ export default function Footer() {
             </>
           )}
         </div>
-      
+
         <ResetBuilderDialog />
       </div>
     </div>

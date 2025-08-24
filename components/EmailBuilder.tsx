@@ -1,10 +1,10 @@
 "use client";
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { useDraftStore } from "@/lib/store/useDraftStore";
 import { setCookie } from "@/lib/utils";
 import ChatPane from "./ChatPane";
-import PreviewPane from "./PreviewPane";
-import { useDraftStore } from "@/lib/store/useDraftStore";
+import PreviewPane from "./preview-pane/PreviewPane";
 
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
   let t: number | undefined;
