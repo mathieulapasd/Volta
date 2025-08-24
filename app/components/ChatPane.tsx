@@ -1,23 +1,18 @@
 "use client";
 
-import { Bot, Link, Send, Upload, User } from "lucide-react";
-import type React from "react";
+import { Bot, Send, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { sendMessage } from "@/lib/ai";
 import type { EmailMessage } from "@/lib/schemas";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { cn } from "@/lib/utils";
-import { Badge } from "./ui/badge";
 
 export default function ChatPane() {
-  const assets = useDraftStore((s) => s.assets);
-  const setAssets = useDraftStore((s) => s.setAssets);
   const setDraft = useDraftStore((s) => s.setDraft);
 
   const messages = useChatStore((s) => s.messages);
@@ -26,10 +21,7 @@ export default function ChatPane() {
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [temperature] = useState([0.7]);
-  const [urlInput, setUrlInput] = useState("");
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -58,7 +50,7 @@ export default function ChatPane() {
     setIsStreaming(true);
 
     try {
-      const response = await sendMessage(input, temperature[0], assets);
+      const response = await sendMessage(input);
 
       const assistantMessage: EmailMessage = {
         id: (Date.now() + 1).toString(),
@@ -88,58 +80,6 @@ export default function ChatPane() {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Veuillez sélectionner un fichier image");
-
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      const newAsset = {
-        id: `img-${Date.now()}`,
-        filename: file.name,
-        mime: file.type,
-        source: dataUrl,
-        alt: file.name.replace(/\.[^/.]+$/, ""),
-        width: undefined,
-        height: undefined,
-      };
-
-      setAssets([...assets, newAsset]);
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleUrlImport = () => {
-    if (!urlInput.trim()) {
-      return;
-    }
-
-    const newAsset = {
-      id: `img-${Date.now()}`,
-      filename: urlInput.split("/").pop() || "imported-image",
-      mime: "image/jpeg", // Default, could be improved with detection
-      source: urlInput,
-      alt: "Image importée",
-      width: undefined,
-      height: undefined,
-    };
-
-    setAssets([...assets, newAsset]);
-    setUrlInput("");
-  };
-
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -151,12 +91,6 @@ export default function ChatPane() {
           </Badge>
           {/* <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div> */}
         </div>
-
-        {/* Temperature Control */}
-        {/* <div className="space-y-2">
-          <span className="font-medium text-sm">Température: {temperature[0]}</span>
-          <Slider value={temperature} onValueChange={setTemperature} max={1} min={0} step={0.1} className="w-full" />
-        </div> */}
       </div>
 
       {/* Messages */}
@@ -206,41 +140,8 @@ export default function ChatPane() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Assets */}
-      {assets.length > 0 && (
-        <div className="border-border border-t p-4">
-          <h3 className="mb-2 font-medium text-sm">Ressources ({assets.length})</h3>
-          <div className="flex flex-wrap gap-2">
-            {assets.map((asset) => (
-              <div key={asset.id} className="rounded bg-muted px-2 py-1 text-xs">
-                {asset.filename}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Input Area */}
       <div className="space-y-3 border-border border-t p-4">
-        {/* Image Upload/Import */}
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-            <Upload />
-            Importer une image
-          </Button>
-          <div className="flex flex-1 space-x-2">
-            <Input
-              placeholder="URL de l'image..."
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              className="text-sm"
-            />
-            <Button variant="outline" size="sm" onClick={handleUrlImport} disabled={!urlInput.trim()}>
-              <Link />
-            </Button>
-          </div>
-        </div>
-
         {/* Message Input */}
         <div className="flex space-x-2">
           <Textarea
@@ -260,8 +161,6 @@ export default function ChatPane() {
           </Button>
         </div>
       </div>
-
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
     </div>
   );
 }

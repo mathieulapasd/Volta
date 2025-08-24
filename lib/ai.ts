@@ -7,11 +7,7 @@ interface AIResponse {
 }
 
 // Mock AI response - replace with real AI SDK integration
-export async function sendMessage(
-  message: string,
-  _temperature: number,
-  assets: EmailDraft["assets"]
-): Promise<AIResponse> {
+export async function sendMessage(message: string): Promise<AIResponse> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
 
@@ -47,17 +43,6 @@ export async function sendMessage(
                       <p data-id="header-subtitle" style="margin: 10px 0 0 0; font-size: 16px; color: #666666;">
                         Restez informés de nos dernières actualités et conseils
                       </p>
-                    </td>
-                  </tr>
-                </table>
-                
-                <!-- Hero Image -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                  <tr>
-                    <td style="padding: 0;">
-                      <img data-id="hero-image" src="/newsletter-hero.png" 
-                           alt="Newsletter hero" width="600" height="300" 
-                           style="width: 100%; height: auto; display: block;" />
                     </td>
                   </tr>
                 </table>
@@ -100,7 +85,6 @@ export async function sendMessage(
           </tr>
         </table>
       `,
-      assets: assets,
       manifest: {
         blocks: [
           {
@@ -116,13 +100,6 @@ export async function sendMessage(
             selector: '[data-id="header-subtitle"]',
             editable: ["text", "color", "fontSize", "fontWeight", "textAlign", "lineHeight", "padding"],
             label: "Sous-titre du header",
-          },
-          {
-            id: "hero-image",
-            type: "image",
-            selector: '[data-id="hero-image"]',
-            editable: ["src", "alt", "width", "height", "borderRadius"],
-            label: "Image principale",
           },
           {
             id: "content-title",

@@ -18,7 +18,7 @@ interface ChatActions {
   resetTokens: () => void;
 }
 
-export type ChatStore = ChatState & ChatActions;
+type ChatStore = ChatState & ChatActions;
 
 export const useChatStore = create<ChatStore>()(
   persist(

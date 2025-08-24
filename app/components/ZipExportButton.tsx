@@ -3,18 +3,14 @@
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { EditOp, EmailDraft } from "@/lib/schemas";
+import { useDraftStore } from "@/lib/store/useDraftStore";
 import { createEmailZip, estimateZipSize } from "@/lib/zip";
-import { Badge } from "./ui/badge";
 
-interface ZipExportButtonProps {
-  draft: EmailDraft | null;
-  edits: EditOp[];
-  assets: EmailDraft["assets"];
-}
+export default function ZipExportButton() {
+  const draft = useDraftStore((s) => s.draft);
 
-export default function ZipExportButton({ draft, edits, assets }: ZipExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const canExport = draft && draft.html_inline.trim().length > 0;
@@ -33,7 +29,7 @@ export default function ZipExportButton({ draft, edits, assets }: ZipExportButto
     setIsExporting(true);
 
     try {
-      const zipBlob = await createEmailZip(draft, edits, assets);
+      const zipBlob = await createEmailZip(draft);
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement("a");
 

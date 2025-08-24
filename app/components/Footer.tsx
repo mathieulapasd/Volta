@@ -1,13 +1,10 @@
 "use client";
 
-import ResetBuilderDialog from "@/components/ResetBuilderDialog";
 import { useDraftStore } from "@/lib/store/useDraftStore";
-import { Separator } from "./ui/separator";
+import ResetBuilderDialog from "./ResetBuilderDialog";
 
 export default function Footer() {
   const currentDraft = useDraftStore((s) => s.draft);
-  const edits = useDraftStore((s) => s.edits);
-  const assets = useDraftStore((s) => s.assets);
 
   return (
     <div className="border-gray-200 border-t bg-gray-50 px-6 py-2 dark:border-gray-700 dark:bg-gray-800">
@@ -26,24 +23,6 @@ export default function Footer() {
               </>
             )}
           </span>
-
-          {edits.length > 0 && (
-            <>
-              <Separator orientation="vertical" className="h-4" />
-              <span>
-                {edits.length} modification{edits.length !== 1 ? "s" : ""} en cours
-              </span>
-            </>
-          )}
-
-          {assets.length > 0 && (
-            <>
-              <Separator orientation="vertical" className="h-4" />
-              <span>
-                {assets.length} asset{assets.length !== 1 ? "s" : ""} chargé{assets.length !== 1 ? "s" : ""}
-              </span>
-            </>
-          )}
         </div>
 
         <ResetBuilderDialog />
