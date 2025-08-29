@@ -9,6 +9,14 @@ export function sanitizeHtml(html: string): string {
   });
 }
 
+export function getElement(iframe: HTMLIFrameElement | null, selector: string): Element | null {
+  if (!iframe?.contentDocument) {
+    return null;
+  }
+
+  return iframe.contentDocument.querySelector(selector);
+}
+
 // Get current value from an element for editing
 export function getCurrentValue(element: Element, attribute: string): string {
   if (attribute === "text") {

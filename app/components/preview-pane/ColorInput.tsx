@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 interface ColorInputProps {
   value: string | undefined;
   onChange: (value: string) => void;
+  onBlur: () => void;
 }
 
 export default function ColorInput(props: ColorInputProps) {
@@ -46,5 +47,12 @@ export default function ColorInput(props: ColorInputProps) {
     return fallback;
   };
 
-  return <Input type="color" value={normalizeColor(props.value)} onChange={(e) => props.onChange(e.target.value)} />;
+  return (
+    <Input
+      type="color"
+      value={normalizeColor(props.value)}
+      onChange={(e) => props.onChange(e.target.value)}
+      onBlur={props.onBlur}
+    />
+  );
 }

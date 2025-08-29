@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface NumberInputWithUnitSelectProps {
   value: string;
   onChange: (value: string) => void;
+  onBlur: () => void;
 }
 
 export default function NumberInputWithUnitSelect(props: NumberInputWithUnitSelectProps) {
@@ -35,6 +36,7 @@ export default function NumberInputWithUnitSelect(props: NumberInputWithUnitSele
         type="number"
         value={num}
         onChange={(e) => props.onChange(joinNumberAndUnit(e.target.value, unit))}
+        onBlur={props.onBlur}
         placeholder="16"
       />
       <Select value={unit} onValueChange={(u) => props.onChange(joinNumberAndUnit(num, u))}>

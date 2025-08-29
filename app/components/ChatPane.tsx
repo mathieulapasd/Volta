@@ -1,6 +1,7 @@
 "use client";
 
 import { Bot, Send, User } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,10 +84,11 @@ export default function ChatPane() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-border border-b p-4">
+      <div className="h-15 border-border border-b bg-primary p-4">
         <div className="flex items-center justify-between">
-          <h1 className="font-semibold text-xl">Générateur d'e-mail</h1>
-          <Badge variant="outline" className="text-xs">
+          <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
+          <h1 className="font-semibold text-primary-foreground text-xl">Générateur d'e-mail</h1>
+          <Badge variant="outline" className="text-primary-foreground text-xs">
             v0.1.0
           </Badge>
           {/* <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div> */}

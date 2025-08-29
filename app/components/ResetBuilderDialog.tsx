@@ -27,8 +27,7 @@ export default function ResetBuilderDialog() {
       {
         id: Date.now().toString(),
         role: "assistant",
-        content:
-          "Bonjour! Je suis votre assistant de génération d'e-mail. Décrivez l'e-mail que vous souhaitez créer et je le générerai pour vous. Vous pouvez également importer des images ou les importer depuis des URL.",
+        content: "Quel email créons-nous aujourd'hui ?",
         timestamp: new Date().toISOString(),
       },
     ]);

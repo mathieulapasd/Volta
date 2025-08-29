@@ -17,13 +17,13 @@ export default function PreviewPane() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-border border-b p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-xl">{viewMode === "preview" ? "Prévisualisation" : "Code HTML"}</h2>
-          <div className="flex gap-2">
-            <ViewModeButton />
-            <ZipExportButton />
-          </div>
+      <div className="flex h-15 items-center justify-between border-border border-b bg-primary px-4">
+        <h2 className="font-semibold text-primary-foreground text-xl">
+          {viewMode === "preview" ? "Prévisualisation" : "Code HTML"}
+        </h2>
+        <div className="flex gap-2">
+          <ViewModeButton />
+          <ZipExportButton />
         </div>
       </div>
 
