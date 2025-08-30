@@ -1,14 +1,16 @@
 "use client";
 
+import { memo, useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { rafThrottle } from "@/lib/debounce";
 
 interface ColorInputProps {
   value: string | undefined;
   onChange: (value: string) => void;
-  onBlur: () => void;
+  onBlur?: () => void;
 }
 
-export default function ColorInput(props: ColorInputProps) {
+export function ColorInput(props: ColorInputProps) {
   const normalizeColor = (value = "", fallback = "#000000") => {
     const v = value.trim();
 
@@ -56,3 +58,39 @@ export default function ColorInput(props: ColorInputProps) {
     />
   );
 }
+
+export const IsolatedColorInput = memo(function IsolatedColorInput(props: {
+  initialValue?: string;
+  onCommit: (value: string) => void;
+  onBlur?: () => void;
+}) {
+  const [value, setValue] = useState<string>(props.initialValue ?? "");
+
+  useEffect(() => {
+    setValue(props.initialValue ?? "");
+  }, [props.initialValue]);
+
+  const throttledCommit = useMemo(
+    () =>
+      rafThrottle((v: string) => {
+        props.onCommit(v);
+      }),
+    [props.onCommit]
+  );
+
+  return (
+    <ColorInput
+      value={value}
+      onChange={(v) => {
+        const next = v ?? "";
+
+        setValue(next);
+        throttledCommit(next);
+      }}
+      onBlur={() => {
+        props.onCommit(value);
+        props.onBlur?.();
+      }}
+    />
+  );
+});

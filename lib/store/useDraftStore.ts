@@ -17,6 +17,8 @@ interface DraftActions {
 
   updateDraftHtml: (html: string) => void;
 
+  updateDraftConfig: (config: EmailDraft["config"]) => void;
+
   setViewMode: (viewMode: "preview" | "html") => void;
 
   setHasHydrated: (state: boolean) => void;
@@ -55,6 +57,18 @@ export const useDraftStore = create<DraftStore>()(
         }
 
         const next: EmailDraft = { ...current, html_inline: html };
+
+        set({ draft: next });
+      },
+
+      updateDraftConfig: (config) => {
+        const current = get().draft;
+
+        if (!current) {
+          return;
+        }
+
+        const next: EmailDraft = { ...current, config };
 
         set({ draft: next });
       },

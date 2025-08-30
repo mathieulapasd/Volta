@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Send, User } from "lucide-react";
+import { Send, User } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -86,8 +86,10 @@ export default function ChatPane() {
       {/* Header */}
       <div className="h-15 border-border border-b bg-primary p-4">
         <div className="flex items-center justify-between">
-          <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
-          <h1 className="font-semibold text-primary-foreground text-xl">Générateur d'e-mail</h1>
+          <div className="flex items-center gap-2">
+            <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
+            <h1 className="font-semibold text-primary-foreground text-xl">Générateur d'e-mail</h1>
+          </div>
           <Badge variant="outline" className="text-primary-foreground text-xs">
             v0.1.0
           </Badge>
@@ -104,7 +106,7 @@ export default function ChatPane() {
           >
             {message.role === "assistant" && (
               <div className="flex size-8 items-center justify-center rounded-full bg-primary">
-                <Bot className="size-4 text-primary-foreground" />
+                <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
               </div>
             )}
             <Card
@@ -128,7 +130,7 @@ export default function ChatPane() {
         {isStreaming && (
           <div className="flex items-start space-x-3">
             <div className="flex size-8 items-center justify-center rounded-full bg-primary">
-              <Bot className="size-4 animate-pulse text-primary-foreground" />
+              <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
             </div>
             <Card className="bg-muted p-3">
               <div className="flex space-x-1">

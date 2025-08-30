@@ -1,6 +1,7 @@
 "use client";
 
-import type { RefObject } from "react";
+import { type RefObject, useEffect } from "react";
+import { fontToCssMap } from "@/lib/schemas";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 
 interface IframeProps {
@@ -10,6 +11,129 @@ interface IframeProps {
 
 export default function Iframe(props: IframeProps) {
   const draft = useDraftStore((s) => s.draft);
+
+  useEffect(() => {
+    const iframe = props.iframeRef.current;
+
+    if (!iframe || !draft?.html_inline) {
+      return;
+    }
+
+    const attach = (): (() => void) | undefined => {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+
+      if (!doc) {
+        return;
+      }
+
+      const defaultFont = fontToCssMap[draft.config.font];
+
+      if (!doc.documentElement.hasAttribute("data-default-font-applied")) {
+        doc.documentElement.setAttribute("data-default-font-applied", "1");
+
+        if (doc.body) {
+          doc.body.style.setProperty("font-family", defaultFont);
+          doc.documentElement.style.setProperty("--primary", draft.config.primaryColor);
+        }
+      }
+
+      const ac = new AbortController();
+
+      const onOver = (e: Event) => {
+        const t = e.target as Element | null;
+        const el = t?.closest?.("[data-id]") as HTMLElement | null;
+
+        if (!el) {
+          return;
+        }
+
+        // Use box-shadow so we don't overwrite border-radius.
+        el.style.outline = "2px solid #3b82f6";
+        el.style.outlineOffset = "2px";
+        el.style.cursor = "pointer";
+
+        window.postMessage(
+          {
+            type: "elementHover",
+            elementId: el.getAttribute("data-id"),
+          },
+          "*"
+        );
+      };
+
+      const onOut = (e: Event) => {
+        const t = e.target as Element | null;
+        const el = t?.closest?.("[data-id]") as HTMLElement | null;
+
+        if (!el) {
+          return;
+        }
+
+        el.style.outline = "none";
+        el.style.outlineOffset = "0px";
+        el.style.cursor = "default";
+      };
+
+      const onClick = (e: Event) => {
+        const t = e.target as Element | null;
+        const el = t?.closest?.("[data-id]") as HTMLElement | null;
+
+        if (!el) {
+          return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        window.postMessage(
+          {
+            type: "elementClick",
+            elementId: el.getAttribute("data-id"),
+          },
+          "*"
+        );
+      };
+
+      // Capture phase for robustness in nested structures.
+      const opts = { capture: true, signal: ac.signal } as AddEventListenerOptions;
+
+      doc.addEventListener("mouseover", onOver, opts);
+      doc.addEventListener("mouseout", onOut, opts);
+      doc.addEventListener("click", onClick, opts);
+
+      // Cleanup for all three listeners in one call.
+      return () => {
+        ac.abort();
+      };
+    };
+
+    let detachDoc: (() => void) | undefined;
+
+    const onLoad = () => {
+      // If the iframe reloads, drop old listeners before reattaching.
+      if (detachDoc) {
+        detachDoc();
+      }
+
+      detachDoc = attach();
+    };
+
+    // If the document is already ready, attach immediately; also listen for future loads.
+    if (iframe.contentDocument?.readyState === "complete") {
+      detachDoc = attach();
+    }
+
+    iframe.addEventListener("load", onLoad);
+
+    return () => {
+      iframe.removeEventListener("load", onLoad);
+
+      if (detachDoc) {
+        detachDoc();
+        detachDoc = undefined;
+      }
+    };
+  }, [props.iframeRef, draft?.html_inline, draft?.config]);
 
   const getIframeContent = () => {
     if (!draft) {
@@ -22,47 +146,7 @@ export default function Iframe(props: IframeProps) {
         </html>`;
     }
 
-    // Inject hover/click handling script
-    const scriptTag = `
-<script>
-  (function() {
-    document.addEventListener('mouseover', (e) => {
-      const element = e.target.closest('[data-id]');
-      if (element) {
-        element.style.outline = '2px solid #3b82f6';
-        element.style.borderRadius = '6px';
-        element.style.cursor = 'pointer';
-        window.parent.postMessage({ type: 'elementHover', elementId: element.getAttribute('data-id') }, '*');
-      }
-    });
-    
-    document.addEventListener('mouseout', (e) => {
-      const element = e.target.closest('[data-id]');
-      if (element) {
-        element.style.outline = 'none';
-        element.style.cursor = 'default';
-      }
-    });
-    
-    document.addEventListener('click', (e) => {
-      const element = e.target.closest('[data-id]');
-      if (element) {
-        // Avoid triggering default navigation, but don't synthesize a click feel
-        e.preventDefault();
-        e.stopPropagation();
-        window.parent.postMessage({ type: 'elementClick', elementId: element.getAttribute('data-id') }, '*');
-      }
-    });
-  })();
-</script>`;
-
-    const rawBase = draft.html_inline;
-
-    if (/<\/body>/i.test(rawBase)) {
-      return rawBase.replace(/<\/body>/i, `${scriptTag}</body>`);
-    }
-
-    return `${rawBase}${scriptTag}`;
+    return draft.html_inline;
   };
 
   return (

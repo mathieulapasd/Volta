@@ -27,7 +27,7 @@ export async function sendMessage(message: string): Promise<AIResponse> {
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0; padding: 0;">
           <tr>
             <td style="padding: 0;">
-              <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+              <div style="max-width: 600px; margin: 0 auto;">
                 <!-- Preheader -->
                 <div style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
                   Votre newsletter de la semaine est là!
@@ -52,15 +52,27 @@ export async function sendMessage(message: string): Promise<AIResponse> {
                   <tr>
                     <td style="padding: 40px 20px; background-color: #ffffff;">
                       <h2 data-id="content-title" style="margin: 0 0 20px 0; font-size: 24px; font-weight: bold; color: #1a1a1a;">
-                        Les points forts de la semaine
+                      Les points forts de la semaine
                       </h2>
-                      <p data-id="content-text" style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333333;">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                      <p data-id="content-text" style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333333; white-space: pre-wrap;">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
                       </p>
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                         <tr>
-                          <td style="border-radius: 6px; background-color: #007bff;">
-                            <a data-id="cta-button" href="#" style="display: inline-block; padding: 12px 24px; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">
+                          <td>
+                            <!--[if mso]>
+                            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
+                              href="#"
+                              style="height:44px;v-text-anchor:middle;width:160px;"
+                              arcsize="12%" stroke="f" fillcolor="var(--primary)">
+                              <w:anchorlock/>
+                              <center style="color:#ffffff;font-family:Inter, Arial, sans-serif;font-size:16px;font-weight:700;">
+                                Lire plus
+                              </center>
+                            </v:roundrect>
+                            <![endif]-->
+                            <!--[if !mso]><!-- -->
+                            <a data-id="cta-button" href="#" style="display: inline-block; background-color: var(--primary); padding: 12px 24px; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">
                               Lire plus
                             </a>
                           </td>
@@ -140,6 +152,10 @@ export async function sendMessage(message: string): Promise<AIResponse> {
             label: "Texte du pied de page",
           },
         ],
+      },
+      config: {
+        font: "arial",
+        primaryColor: "#007bff",
       },
     };
 

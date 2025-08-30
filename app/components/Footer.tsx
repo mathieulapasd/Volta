@@ -12,15 +12,15 @@ export default function Footer() {
         <div className="flex items-center gap-4">
           <span>
             {currentDraft ? (
-              <>
+              <div className="flex items-center gap-2">
                 <span className="text-green-600 dark:text-green-400">●</span>
                 E-mail chargé avec {currentDraft.manifest.blocks.length} blocs modifiables
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <span className="text-gray-400">○</span>
                 Aucun e-mail chargé
-              </>
+              </div>
             )}
           </span>
         </div>

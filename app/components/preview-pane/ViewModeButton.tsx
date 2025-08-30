@@ -1,5 +1,6 @@
 "use client";
 
+import { Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 
@@ -15,6 +16,7 @@ export default function ViewModeButton() {
       size="sm"
       disabled={!draft || draft.html_inline.trim().length <= 0}
     >
+      <Code />
       {viewMode === "preview" ? "Voir HTML" : "Voir Prévisualisation"}
     </Button>
   );

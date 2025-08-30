@@ -3,17 +3,18 @@
 import { memo, type RefObject, startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectItem } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { debounce } from "@/lib/debounce";
+import { debounce, rafThrottle } from "@/lib/debounce";
 import { getCurrentValue, getElement, sanitizeHtml } from "@/lib/emailEditing";
 import type { AttributeName, EmailBlock } from "@/lib/schemas";
 import { useDraftStore } from "@/lib/store/useDraftStore";
-import ColorInput from "./ColorInput";
+import { IsolatedColorInput } from "./ColorInput";
+import { IsolatedSelect } from "./IsolatedSelect";
 import NumberInputWithUnitSelect from "./NumberInputWithUnitSelect";
 
-const IsolatedColor = memo(function IsolatedColor(props: {
+const IsolatedNumberUnit = memo(function IsolatedNumberUnit(props: {
   initialValue?: string;
   onCommit: (value: string) => void;
   onBlur: () => void;
@@ -31,8 +32,9 @@ const IsolatedColor = memo(function IsolatedColor(props: {
       }),
     [props.onCommit]
   );
+
   return (
-    <ColorInput
+    <NumberInputWithUnitSelect
       value={value}
       onChange={(v) => {
         const next = v ?? "";
@@ -92,23 +94,14 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
         {props.selectedBlock.editable.includes("target") && (
           <div className="space-y-2">
             <Label>Cible</Label>
-            <Select
-              value={props.initialValues.target || "_self"}
-              onValueChange={(v) => props.onFieldChange("target", v)}
-              onOpenChange={(open) => {
-                if (!open) {
-                  props.onFieldBlur("target");
-                }
-              }}
+            <IsolatedSelect
+              initialValue={props.initialValues.target || "_self"}
+              onCommit={(v) => props.onFieldChange("target", v)}
+              onBlur={() => props.onFieldBlur("target")}
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_self">Même onglet</SelectItem>
-                <SelectItem value="_blank">Nouvel onglet</SelectItem>
-              </SelectContent>
-            </Select>
+              <SelectItem value="_self">Même onglet</SelectItem>
+              <SelectItem value="_blank">Nouvel onglet</SelectItem>
+            </IsolatedSelect>
           </div>
         )}
 
@@ -171,7 +164,7 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
         {props.selectedBlock.editable.includes("color") && (
           <div className="space-y-2">
             <Label>Couleur du texte</Label>
-            <IsolatedColor
+            <IsolatedColorInput
               initialValue={props.initialValues.color}
               onCommit={(v) => props.onFieldChange("color", v)}
               onBlur={() => props.onFieldBlur("color")}
@@ -182,7 +175,7 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
         {props.selectedBlock.editable.includes("bgcolor") && (
           <div className="space-y-2">
             <Label>Couleur de fond</Label>
-            <IsolatedColor
+            <IsolatedColorInput
               initialValue={props.initialValues.bgcolor || "#ffffff"}
               onCommit={(v) => props.onFieldChange("bgcolor", v)}
               onBlur={() => props.onFieldBlur("bgcolor")}
@@ -193,58 +186,38 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
         {props.selectedBlock.editable.includes("fontWeight") && (
           <div className="space-y-2">
             <Label>Épaisseur du texte</Label>
-            <Select
-              value={props.initialValues.fontWeight || ""}
-              onValueChange={(v) => props.onFieldChange("fontWeight", v)}
-              onOpenChange={(open) => {
-                if (!open) {
-                  props.onFieldBlur("fontWeight");
-                }
-              }}
+            <IsolatedSelect
+              initialValue={props.initialValues.fontWeight || ""}
+              onCommit={(v) => props.onFieldChange("fontWeight", v)}
+              onBlur={() => props.onFieldBlur("fontWeight")}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="400">Normal</SelectItem>
-                <SelectItem value="500">Moyen</SelectItem>
-                <SelectItem value="600">Semi-gras</SelectItem>
-                <SelectItem value="700">Gras</SelectItem>
-              </SelectContent>
-            </Select>
+              <SelectItem value="400">Normal</SelectItem>
+              <SelectItem value="700">Gras</SelectItem>
+            </IsolatedSelect>
           </div>
         )}
 
         {props.selectedBlock.editable.includes("textAlign") && (
           <div className="space-y-2">
             <Label>Alignement</Label>
-            <Select
-              value={props.initialValues.textAlign || "left"}
-              onValueChange={(v) => props.onFieldChange("textAlign", v)}
-              onOpenChange={(open) => {
-                if (!open) {
-                  props.onFieldBlur("textAlign");
-                }
-              }}
+            <IsolatedSelect
+              initialValue={props.initialValues.textAlign || "left"}
+              onCommit={(v) => props.onFieldChange("textAlign", v)}
+              onBlur={() => props.onFieldBlur("textAlign")}
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="left">Gauche</SelectItem>
-                <SelectItem value="center">Centre</SelectItem>
-                <SelectItem value="right">Droite</SelectItem>
-              </SelectContent>
-            </Select>
+              <SelectItem value="left">Gauche</SelectItem>
+              <SelectItem value="center">Centre</SelectItem>
+              <SelectItem value="right">Droite</SelectItem>
+            </IsolatedSelect>
           </div>
         )}
 
         {props.selectedBlock.editable.includes("fontSize") && (
           <div className="space-y-2">
             <Label>Taille du texte</Label>
-            <NumberInputWithUnitSelect
-              value={props.initialValues.fontSize || ""}
-              onChange={(v) => props.onFieldChange("fontSize", v)}
+            <IsolatedNumberUnit
+              initialValue={props.initialValues.fontSize || ""}
+              onCommit={(v) => props.onFieldChange("fontSize", v)}
               onBlur={() => props.onFieldBlur("fontSize")}
             />
           </div>
@@ -253,9 +226,9 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
         {props.selectedBlock.editable.includes("lineHeight") && (
           <div className="space-y-2">
             <Label>Interligne</Label>
-            <NumberInputWithUnitSelect
-              value={props.initialValues.lineHeight || ""}
-              onChange={(v) => props.onFieldChange("lineHeight", v)}
+            <IsolatedNumberUnit
+              initialValue={props.initialValues.lineHeight || ""}
+              onCommit={(v) => props.onFieldChange("lineHeight", v)}
               onBlur={() => props.onFieldBlur("lineHeight")}
             />
           </div>
@@ -264,9 +237,9 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
         {props.selectedBlock.editable.includes("padding") && (
           <div className="space-y-2">
             <Label>Padding</Label>
-            <NumberInputWithUnitSelect
-              value={props.initialValues.padding || ""}
-              onChange={(v) => props.onFieldChange("padding", v)}
+            <IsolatedNumberUnit
+              initialValue={props.initialValues.padding || ""}
+              onCommit={(v) => props.onFieldChange("padding", v)}
               onBlur={() => props.onFieldBlur("padding")}
             />
           </div>
@@ -275,9 +248,9 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
         {props.selectedBlock.editable.includes("borderRadius") && (
           <div className="space-y-2">
             <Label>Rayon de bordure</Label>
-            <NumberInputWithUnitSelect
-              value={props.initialValues.borderRadius || ""}
-              onChange={(v) => props.onFieldChange("borderRadius", v)}
+            <IsolatedNumberUnit
+              initialValue={props.initialValues.borderRadius || ""}
+              onCommit={(v) => props.onFieldChange("borderRadius", v)}
               onBlur={() => props.onFieldBlur("borderRadius")}
             />
           </div>
@@ -288,19 +261,6 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
 }
 
 const MemoBlockCustomizationContent = memo(BlockCustomizationContent);
-
-// biome-ignore lint/suspicious/noExplicitAny: makes sense
-function rafThrottle<T extends (...args: any[]) => void>(fn: T) {
-  let ticking = false;
-  return (...args: Parameters<T>) => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      ticking = false;
-      fn(...args);
-    });
-  };
-}
 
 interface BlockCustomizationProps {
   iframeRef: RefObject<HTMLIFrameElement | null>;
@@ -344,14 +304,37 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
         return;
       }
 
-      if (name === "text") {
-        element.textContent = value;
-      } else if (name === "color") {
-        (element as HTMLElement).style.setProperty("color", value);
-      } else if (name === "bgcolor") {
-        (element as HTMLElement).style.setProperty("background-color", value);
-      } else {
-        element.setAttribute(name, value);
+      switch (name) {
+        case "text":
+          element.textContent = value;
+          break;
+        case "color":
+          (element as HTMLElement).style.setProperty("color", value);
+          break;
+        case "bgcolor":
+          (element as HTMLElement).style.setProperty("background-color", value);
+          break;
+        case "fontWeight":
+          (element as HTMLElement).style.setProperty("font-weight", value);
+          break;
+        case "textAlign":
+          (element as HTMLElement).style.setProperty("text-align", value);
+          break;
+        case "fontSize":
+          (element as HTMLElement).style.setProperty("font-size", value);
+          break;
+        case "lineHeight":
+          (element as HTMLElement).style.setProperty("line-height", value);
+          break;
+        case "padding":
+          (element as HTMLElement).style.setProperty("padding", value);
+          break;
+        case "borderRadius":
+          (element as HTMLElement).style.setProperty("border-radius", value);
+          break;
+        default:
+          element.setAttribute(name, value);
+          break;
       }
     },
     [props.iframeRef, selectedBlock]

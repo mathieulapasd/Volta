@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import ZipExportButton from "../ZipExportButton";
 import BlockCustomization from "./BlockCustomization";
 import Code from "./Code";
+import GlobalCustomization from "./GlobalCustomization";
 import Iframe from "./Iframe";
 import ViewModeButton from "./ViewModeButton";
 
@@ -22,6 +23,7 @@ export default function PreviewPane() {
           {viewMode === "preview" ? "Prévisualisation" : "Code HTML"}
         </h2>
         <div className="flex gap-2">
+          <GlobalCustomization iframeRef={iframeRef} />
           <ViewModeButton />
           <ZipExportButton />
         </div>

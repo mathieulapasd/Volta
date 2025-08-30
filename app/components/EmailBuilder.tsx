@@ -3,7 +3,7 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { setCookie } from "@/lib/utils";
-import ChatPane from "./ChatPane";
+import ChatPane from "./chat-pane/ChatPane";
 import PreviewPane from "./preview-pane/PreviewPane";
 
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
