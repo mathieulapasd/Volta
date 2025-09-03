@@ -43,6 +43,8 @@ export default function ZipExportButton() {
       console.error("Export failed:", error);
 
       toast.error("Échec de l'exportation du modèle d'e-mail");
+    } finally {
+      setIsExporting(false);
     }
   };
 

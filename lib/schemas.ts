@@ -64,6 +64,16 @@ export const emailDraftSchema = z.object({
     font: fontEnum.default("arial"),
     primaryColor: z.string().default("#007bff"),
   }),
+  assets: z
+    .array(
+      z.object({
+        id: z.string(),
+        filename: z.string(),
+        mimeType: z.string(),
+        dataUrl: z.string(),
+      })
+    )
+    .default([]),
 });
 
 export type EmailMessage = z.infer<typeof emailMessageSchema>;
@@ -71,3 +81,4 @@ export type EmailBlock = z.infer<typeof emailBlockSchema>;
 export type EmailDraft = z.infer<typeof emailDraftSchema>;
 export type AttributeName = z.infer<typeof attributeEnum>;
 export type GlobalAttributeName = z.infer<typeof globalAttributeEnum>;
+export type EmailAsset = EmailDraft["assets"][number];

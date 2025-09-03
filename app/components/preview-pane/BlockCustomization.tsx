@@ -1,6 +1,18 @@
 "use client";
 
-import { memo, type RefObject, startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Upload } from "lucide-react";
+import {
+  type ChangeEvent,
+  memo,
+  type RefObject,
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectItem } from "@/components/ui/select";
@@ -50,6 +62,93 @@ const IsolatedNumberUnit = memo(function IsolatedNumberUnit(props: {
   );
 });
 
+const IsolatedImageInput = memo(function IsolatedImageInput(props: {
+  initialValue?: string;
+  onCommit: (value: string) => void;
+  onBlur: () => void;
+}) {
+  const [value, setValue] = useState<string>(props.initialValue ?? "");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const addAsset = useDraftStore((s) => s.addAsset);
+
+  useEffect(() => {
+    setValue(props.initialValue ?? "");
+  }, [props.initialValue]);
+
+  const throttledCommit = useMemo(
+    () =>
+      rafThrottle((v: string) => {
+        props.onCommit(v);
+      }),
+    [props.onCommit]
+  );
+
+  const onPickFile = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const onFileChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const result = typeof reader.result === "string" ? reader.result : "";
+
+        if (!result) {
+          return;
+        }
+
+        // Persist the image into the draft assets for export, but keep data URL in preview
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        addAsset({
+          filename: safeName,
+          mimeType: file.type || "application/octet-stream",
+          dataUrl: result,
+        });
+
+        setValue(result);
+        props.onCommit(result);
+        props.onBlur();
+      };
+
+      reader.readAsDataURL(file);
+    },
+    [addAsset, props]
+  );
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="https://... or data:image/..."
+          value={value}
+          onChange={(e) => {
+            const next = e.target.value ?? "";
+
+            setValue(next);
+            throttledCommit(next);
+          }}
+          onBlur={() => {
+            props.onCommit(value);
+            props.onBlur();
+          }}
+          type="text"
+        />
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+        <Button variant="outline" size="icon" onClick={onPickFile}>
+          <Upload />
+        </Button>
+      </div>
+    </div>
+  );
+});
+
 interface BlockCustomizationContentProps {
   selectedBlock: EmailBlock;
   initialValues: Partial<Record<AttributeName, string>>;
@@ -82,7 +181,7 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
           <div className="space-y-2">
             <Label>Lien</Label>
             <Input
-              value={props.initialValues.href || "#"}
+              defaultValue={props.initialValues.href || "#"}
               onChange={(e) => props.onFieldChange("href", e.target.value)}
               onBlur={() => props.onFieldBlur("href")}
               placeholder="https://exemple.com"
@@ -105,29 +204,22 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
           </div>
         )}
 
-        {/* {props.selectedBlock.editable.includes("src") && (
+        {props.selectedBlock.editable.includes("src") && (
           <div className="space-y-2">
             <Label>Image</Label>
-            <Select value={props.initialValues.src || ""} onValueChange={(v) => props.commitAttribute("src", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner une image" />
-              </SelectTrigger>
-              <SelectContent>
-                {assets.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.filename}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <IsolatedImageInput
+              initialValue={props.initialValues.src || ""}
+              onCommit={(v) => props.onFieldChange("src", v)}
+              onBlur={() => props.onFieldBlur("src")}
+            />
           </div>
-        )} */}
+        )}
 
         {props.selectedBlock.editable.includes("alt") && (
           <div className="space-y-2">
             <Label>Description de l'image</Label>
             <Input
-              value={props.initialValues.alt || ""}
+              defaultValue={props.initialValues.alt || ""}
               onChange={(e) => props.onFieldChange("alt", e.target.value)}
               onBlur={() => props.onFieldBlur("alt")}
               placeholder="Description de l'image"
@@ -140,7 +232,7 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
             <Label>Largeur (px)</Label>
             <Input
               type="number"
-              value={props.initialValues.width || ""}
+              defaultValue={props.initialValues.width || ""}
               onChange={(e) => props.onFieldChange("width", e.target.value)}
               onBlur={() => props.onFieldBlur("width")}
               placeholder="Ex: 600"
@@ -153,7 +245,7 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
             <Label>Hauteur (px)</Label>
             <Input
               type="number"
-              value={props.initialValues.height || ""}
+              defaultValue={props.initialValues.height || ""}
               onChange={(e) => props.onFieldChange("height", e.target.value)}
               onBlur={() => props.onFieldBlur("height")}
               placeholder="Ex: 300"
@@ -331,6 +423,25 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
           break;
         case "borderRadius":
           (element as HTMLElement).style.setProperty("border-radius", value);
+          break;
+        case "width": {
+          const numeric = value.trim();
+          const css = /px$/i.test(numeric) ? numeric : `${numeric}px`;
+
+          (element as HTMLElement).style.setProperty("width", css);
+          (element as HTMLElement).setAttribute("width", numeric.replace(/px$/i, ""));
+          break;
+        }
+        case "height": {
+          const numeric = value.trim();
+          const css = /px$/i.test(numeric) ? numeric : `${numeric}px`;
+
+          (element as HTMLElement).style.setProperty("height", css);
+          (element as HTMLElement).setAttribute("height", numeric.replace(/px$/i, ""));
+          break;
+        }
+        case "alt":
+          (element as HTMLElement).setAttribute("alt", value);
           break;
         default:
           element.setAttribute(name, value);

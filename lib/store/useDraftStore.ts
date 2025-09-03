@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { type EmailDraft, emailDraftSchema } from "@/lib/schemas";
+import { type EmailAsset, type EmailDraft, emailDraftSchema } from "@/lib/schemas";
 
 interface DraftState {
   draft: EmailDraft | null;
@@ -18,6 +18,9 @@ interface DraftActions {
   updateDraftHtml: (html: string) => void;
 
   updateDraftConfig: (config: EmailDraft["config"]) => void;
+
+  addAsset: (asset: Omit<EmailAsset, "id"> & { id?: string }) => EmailAsset;
+  getAssetByFilename: (filename: string) => EmailAsset | undefined;
 
   setViewMode: (viewMode: "preview" | "html") => void;
 
@@ -73,6 +76,35 @@ export const useDraftStore = create<DraftStore>()(
         set({ draft: next });
       },
 
+      addAsset: (asset) => {
+        const current = get().draft;
+
+        if (!current) {
+          throw new Error("No draft to attach asset to");
+        }
+
+        const id = asset.id ?? crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+        const nextAsset: EmailAsset = {
+          id,
+          filename: asset.filename,
+          mimeType: asset.mimeType,
+          dataUrl: asset.dataUrl,
+        };
+
+        const next: EmailDraft = { ...current, assets: [...(current.assets ?? []), nextAsset] };
+
+        set({ draft: next });
+
+        return nextAsset;
+      },
+
+      getAssetByFilename: (filename) => {
+        const current = get().draft;
+
+        return current?.assets?.find((a) => a.filename === filename);
+      },
+
       setViewMode: (viewMode) => {
         set({ viewMode });
       },
@@ -83,7 +115,7 @@ export const useDraftStore = create<DraftStore>()(
     }),
     {
       name: "email-builder-store",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: (state) => {
         return () => {
@@ -121,6 +153,11 @@ export const useDraftStore = create<DraftStore>()(
         // Use version param for migrations
         if (!version || version < 2) {
           return { state, version: 2 };
+        }
+        if (version < 3) {
+          // Ensure assets array exists when migrating to v3
+          const nextDraft = state.draft ? { ...state.draft, assets: state.draft.assets ?? [] } : null;
+          return { state: { ...state, draft: nextDraft }, version: 3 };
         }
 
         return { state, version };

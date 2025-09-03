@@ -104,5 +104,77 @@ export function getCurrentValue(element: Element, attribute: string): string {
     return match ? match[1].trim() : "";
   }
 
+  if (attribute === "width") {
+    const attr = element.getAttribute("width");
+
+    if (attr && /^\d+(?:\.\d+)?$/i.test(attr.trim())) {
+      return attr.trim();
+    }
+
+    const style = element.getAttribute("style") || "";
+    const match = style.match(/width:\s*([^;]+)/i);
+
+    if (match) {
+      const raw = match[1].trim();
+      const numeric = raw.match(/^(\d+(?:\.\d+)?)(?:px)?$/i);
+
+      return numeric ? numeric[1] : raw;
+    }
+
+    const ownerDoc = (element as Element).ownerDocument as Document | null;
+    const win = ownerDoc?.defaultView;
+
+    if (win) {
+      try {
+        const computed = win.getComputedStyle(element as HTMLElement).width;
+        const m = computed.match(/^(\d+(?:\.\d+)?)px$/i);
+
+        return m ? m[1] : computed;
+      } catch {
+        // ignore
+      }
+    }
+
+    return "";
+  }
+
+  if (attribute === "height") {
+    const attr = element.getAttribute("height");
+
+    if (attr && /^\d+(?:\.\d+)?$/i.test(attr.trim())) {
+      return attr.trim();
+    }
+
+    const style = element.getAttribute("style") || "";
+    const match = style.match(/height:\s*([^;]+)/i);
+
+    if (match) {
+      const raw = match[1].trim();
+      const numeric = raw.match(/^(\d+(?:\.\d+)?)(?:px)?$/i);
+
+      return numeric ? numeric[1] : raw;
+    }
+
+    const ownerDoc = (element as Element).ownerDocument as Document | null;
+    const win = ownerDoc?.defaultView;
+
+    if (win) {
+      try {
+        const computed = win.getComputedStyle(element as HTMLElement).height;
+        const m = computed.match(/^(\d+(?:\.\d+)?)px$/i);
+
+        return m ? m[1] : computed;
+      } catch {
+        // ignore
+      }
+    }
+
+    return "";
+  }
+
+  if (attribute === "alt") {
+    return element.getAttribute("alt") || "";
+  }
+
   return element.getAttribute(attribute) || "";
 }
