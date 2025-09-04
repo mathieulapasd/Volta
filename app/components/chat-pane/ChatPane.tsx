@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { sendMessage } from "@/lib/ai";
 import type { EmailMessage } from "@/lib/schemas";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { useDraftStore } from "@/lib/store/useDraftStore";
@@ -18,7 +17,7 @@ export default function ChatPane() {
 
   const messages = useChatStore((s) => s.messages);
   const appendMessage = useChatStore((s) => s.appendMessage);
-  const incrementTokens = useChatStore((s) => s.incrementTokens);
+  // const incrementTokens = useChatStore((s) => s.incrementTokens);
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -51,20 +50,36 @@ export default function ChatPane() {
     setIsStreaming(true);
 
     try {
-      const response = await sendMessage(input);
+      const response = await fetch("http://localhost:3000/api/n8n-webhook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input,
+        }),
+      });
 
-      const assistantMessage: EmailMessage = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: response.content,
-        timestamp: new Date().toISOString(),
-      };
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
 
-      appendMessage(assistantMessage);
-      incrementTokens(response.tokenCount);
+      const data = await response.json();
 
-      if (response.draft) {
-        setDraft(response.draft);
+      // const assistantMessage: EmailMessage = {
+      //   id: (Date.now() + 1).toString(),
+      //   role: "assistant",
+      //   content: response.content,
+      //   timestamp: new Date().toISOString(),
+      // };
+
+      // appendMessage(assistantMessage);
+      // incrementTokens(response.tokenCount);
+
+      if (data.output) {
+        const output = JSON.parse(data.output);
+
+        setDraft(output);
       }
     } catch (error) {
       console.error("Error sending message:", error);
