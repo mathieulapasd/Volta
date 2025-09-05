@@ -50,7 +50,7 @@ export default function ChatPane() {
     setIsStreaming(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/n8n-webhook", {
+      const response = await fetch("/api/n8n-webhook", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
