@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const RequestBodySchema = z.object({
+const JsonRequestBodySchema = z.object({
   message: z.string().min(1),
 });
 
@@ -8,29 +8,70 @@ const N8N_WEBHOOK_URL = "https://n8n.srv982868.hstgr.cloud/webhook-test/4cec692c
 
 export async function POST(request: Request): Promise<Response> {
   try {
+    const contentType = request.headers.get("content-type") ?? "";
+
+    // Handle multipart/form-data (message + multiple files)
+    if (contentType.includes("multipart/form-data")) {
+      const incomingForm = await request.formData();
+
+      const messageRaw = incomingForm.get("message");
+      const message = typeof messageRaw === "string" ? messageRaw : "";
+
+      const incomingFiles = incomingForm.getAll("files");
+      const files = incomingFiles.filter((f): f is File => f instanceof File);
+
+      if (!message && files.length === 0) {
+        return Response.json({ error: "Invalid form-data: provide a message or at least one file" }, { status: 400 });
+      }
+
+      const forwardForm = new FormData();
+
+      if (message) {
+        forwardForm.append("message", message);
+      }
+
+      for (const file of files) {
+        forwardForm.append("files", file, file.name);
+      }
+
+      const upstreamResponse = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        body: forwardForm,
+        credentials: "omit",
+        cache: "no-store",
+      });
+
+      const data = await upstreamResponse.json().catch(() => null);
+      const status = upstreamResponse.status;
+
+      if (data === null) {
+        return Response.json({}, { status });
+      }
+
+      return Response.json(data, { status });
+    }
+
+    // Fallback: JSON body with message only
     const json = (await request.json()) as unknown;
-    const parsed = RequestBodySchema.safeParse(json);
+    const parsed = JsonRequestBodySchema.safeParse(json);
 
     if (!parsed.success) {
-      return Response.json({ error: "Invalid request body", details: parsed.error.flatten() }, { status: 400 });
+      return Response.json({ error: "Invalid request body", details: z.treeifyError(parsed.error) }, { status: 400 });
     }
+
+    const formData = new FormData();
+    formData.append("message", parsed.data.message);
 
     const upstreamResponse = await fetch(N8N_WEBHOOK_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(parsed.data),
-      // Prevent passing along cookies/credentials accidentally
+      body: formData,
       credentials: "omit",
       cache: "no-store",
     });
 
-    // Forward status and JSON body
     const data = await upstreamResponse.json().catch(() => null);
     const status = upstreamResponse.status;
 
-    // If n8n returns non-JSON or empty, still return JSON to avoid client parse errors
     if (data === null) {
       return Response.json({}, { status });
     }

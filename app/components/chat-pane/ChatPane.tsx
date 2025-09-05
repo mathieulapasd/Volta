@@ -1,8 +1,8 @@
 "use client";
 
-import { Send, User } from "lucide-react";
+import { Paperclip, Send, User, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type ReactElement, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { useChatStore } from "@/lib/store/useChatStore";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { cn } from "@/lib/utils";
 
-export default function ChatPane() {
+export default function ChatPane(): ReactElement {
   const setDraft = useDraftStore((s) => s.setDraft);
 
   const messages = useChatStore((s) => s.messages);
@@ -22,7 +22,16 @@ export default function ChatPane() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
 
+  interface SelectedFile {
+    id: string;
+    file: File;
+    key: string;
+  }
+
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,30 +43,40 @@ export default function ChatPane() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || isStreaming) {
+    const hasMessage = input.trim().length > 0;
+    const hasFiles = selectedFiles.length > 0;
+
+    if ((!hasMessage && !hasFiles) || isStreaming) {
       return;
     }
 
-    const userMessage: EmailMessage = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-      timestamp: new Date().toISOString(),
-    };
+    if (hasMessage) {
+      const userMessage: EmailMessage = {
+        id: Date.now().toString(),
+        role: "user",
+        content: input,
+        timestamp: new Date().toISOString(),
+      };
 
-    appendMessage(userMessage);
+      appendMessage(userMessage);
+    }
     setInput("");
     setIsStreaming(true);
 
     try {
+      const formData = new FormData();
+
+      if (hasMessage) {
+        formData.append("message", input);
+      }
+
+      for (const sf of selectedFiles) {
+        formData.append("files", sf.file, sf.file.name);
+      }
+
       const response = await fetch("/api/n8n-webhook", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: input,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -93,7 +112,52 @@ export default function ChatPane() {
       appendMessage(errorMessage);
     } finally {
       setIsStreaming(false);
+      setSelectedFiles([]);
     }
+  };
+
+  const openFileDialog = (): void => {
+    fileInputRef.current?.click();
+  };
+
+  const generateId = (): string => {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+      return crypto.randomUUID();
+    }
+
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  };
+
+  const onFilesSelected = (event: ChangeEvent<HTMLInputElement>): void => {
+    const fileList = event.target.files;
+
+    if (!fileList) {
+      return;
+    }
+
+    const next: SelectedFile[] = [];
+    const existingKeys = new Set(selectedFiles.map((f) => f.key));
+
+    for (const file of Array.from(fileList)) {
+      const key = `${file.name}-${file.size}-${file.lastModified}`;
+
+      if (!existingKeys.has(key)) {
+        next.push({ id: generateId(), file, key });
+        existingKeys.add(key);
+      }
+    }
+
+    if (next.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...next]);
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeFile = (id: string): void => {
+    setSelectedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   return (
@@ -175,10 +239,35 @@ export default function ChatPane() {
             }}
             className="min-h-15 flex-1 resize-none"
           />
-          <Button onClick={handleSend} disabled={!input.trim() || isStreaming} size="sm">
+          <input ref={fileInputRef} type="file" multiple onChange={onFilesSelected} className="hidden" />
+          <Button onClick={openFileDialog} variant="outline" size="sm" disabled={isStreaming}>
+            <Paperclip />
+          </Button>
+          <Button
+            onClick={handleSend}
+            disabled={(!input.trim() && selectedFiles.length === 0) || isStreaming}
+            size="sm"
+          >
             <Send />
           </Button>
         </div>
+        {selectedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {selectedFiles.map((sf) => (
+              <Badge key={sf.id} variant="secondary" className="flex items-center gap-1">
+                <span className="max-w-48 truncate text-xs">{sf.file.name}</span>
+                <button
+                  type="button"
+                  aria-label="Supprimer le fichier"
+                  onClick={() => removeFile(sf.id)}
+                  className="rounded p-0.5 hover:bg-muted"
+                >
+                  <X className="size-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
