@@ -23,6 +23,7 @@ export async function sendMessage(message: string): Promise<AIResponse> {
   if (isEmailRequest) {
     // Generate a sample email draft
     const sampleDraft: EmailDraft = {
+      css_inline: "",
       html_inline: `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0; padding: 0;">
           <tr>

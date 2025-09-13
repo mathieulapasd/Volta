@@ -2,7 +2,7 @@ import JSZip from "jszip";
 import type { EmailDraft } from "./schemas";
 
 export function estimateZipSize(draft: EmailDraft): number {
-  const size = draft.html_inline.length; // HTML size
+  const size = draft.html_inline.length + (draft.css_inline?.length ?? 0); // HTML + CSS size
 
   return Math.ceil(size * 1.2); // Add 20% overhead for ZIP compression
 }
@@ -99,6 +99,23 @@ export async function createEmailZip(draft: EmailDraft): Promise<Blob> {
       el.removeAttribute("data-default-font-applied");
     }
   });
+
+  // Inject inline CSS if available
+  if (draft.css_inline && draft.css_inline.trim().length > 0) {
+    const style = doc.createElement("style");
+
+    style.setAttribute("type", "text/css");
+    style.textContent = draft.css_inline;
+
+    if (doc.head) {
+      doc.head.appendChild(style);
+    } else {
+      const head = doc.createElement("head");
+
+      head.appendChild(style);
+      doc.documentElement.insertBefore(head, doc.body || null);
+    }
+  }
 
   finalHtml = doc.documentElement.outerHTML;
 

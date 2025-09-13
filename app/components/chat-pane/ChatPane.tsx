@@ -237,7 +237,7 @@ export default function ChatPane(): ReactElement {
                 handleSend();
               }
             }}
-            className="min-h-15 flex-1 resize-none"
+            className="max-h-48 min-h-15 flex-1 resize-none"
           />
           <input ref={fileInputRef} type="file" multiple onChange={onFilesSelected} className="hidden" />
           <Button onClick={openFileDialog} variant="outline" size="sm" disabled={isStreaming}>

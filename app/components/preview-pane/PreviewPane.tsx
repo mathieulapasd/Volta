@@ -20,7 +20,7 @@ export default function PreviewPane() {
       {/* Header */}
       <div className="flex h-15 items-center justify-between border-border border-b bg-primary px-4">
         <h2 className="font-semibold text-primary-foreground text-xl">
-          {viewMode === "preview" ? "Prévisualisation" : "Code HTML"}
+          {viewMode === "preview" ? "Prévisualisation" : "Code"}
         </h2>
         <div className="flex gap-2">
           <GlobalCustomization iframeRef={iframeRef} />

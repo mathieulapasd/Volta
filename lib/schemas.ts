@@ -56,6 +56,7 @@ const emailBlockSchema = z.object({
 });
 
 export const emailDraftSchema = z.object({
+  css_inline: z.string().default(""),
   html_inline: z.string(),
   manifest: z.object({
     blocks: z.array(emailBlockSchema),

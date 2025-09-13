@@ -146,6 +146,32 @@ export default function Iframe(props: IframeProps) {
         </html>`;
     }
 
+    // Inject css_inline if provided. If HTML already contains <head>, append; else create one.
+    if (draft.css_inline && draft.css_inline.trim().length > 0) {
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(draft.html_inline, "text/html");
+        const style = doc.createElement("style");
+
+        style.setAttribute("type", "text/css");
+        style.textContent = draft.css_inline;
+
+        if (doc.head) {
+          doc.head.appendChild(style);
+        } else {
+          const head = doc.createElement("head");
+
+          head.appendChild(style);
+          doc.documentElement.insertBefore(head, doc.body || null);
+        }
+
+        return doc.documentElement.outerHTML;
+      } catch {
+        // Fallback to raw HTML if parsing fails
+        return draft.html_inline;
+      }
+    }
+
     return draft.html_inline;
   };
 

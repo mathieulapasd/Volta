@@ -16,6 +16,7 @@ interface DraftActions {
   resetDraft: () => void;
 
   updateDraftHtml: (html: string) => void;
+  updateDraftCss: (css: string) => void;
 
   updateDraftConfig: (config: EmailDraft["config"]) => void;
 
@@ -60,6 +61,18 @@ export const useDraftStore = create<DraftStore>()(
         }
 
         const next: EmailDraft = { ...current, html_inline: html };
+
+        set({ draft: next });
+      },
+
+      updateDraftCss: (css) => {
+        const current = get().draft;
+
+        if (!current) {
+          return;
+        }
+
+        const next: EmailDraft = { ...current, css_inline: css };
 
         set({ draft: next });
       },
@@ -115,7 +128,7 @@ export const useDraftStore = create<DraftStore>()(
     }),
     {
       name: "email-builder-store",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: (state) => {
         return () => {
@@ -138,7 +151,34 @@ export const useDraftStore = create<DraftStore>()(
 
         const parsedState = stateSchema.safeParse(candidateState);
 
+        // If strict parse fails (older persisted shape), try legacy parse without css_inline
         if (!parsedState.success) {
+          const legacyStateSchema = z.object({
+            draft: emailDraftSchema.omit({ css_inline: true }).nullable(),
+          });
+
+          const legacyParsed = legacyStateSchema.safeParse(candidateState);
+
+          if (legacyParsed.success) {
+            const legacyDraft = legacyParsed.data.draft;
+
+            const state: DraftState = {
+              draft: legacyDraft
+                ? ({
+                    css_inline: "",
+                    html_inline: legacyDraft.html_inline,
+                    manifest: legacyDraft.manifest,
+                    config: legacyDraft.config,
+                    assets: legacyDraft.assets ?? [],
+                  } as EmailDraft)
+                : null,
+              viewMode: "preview",
+              _hasHydrated: false,
+            };
+
+            return { state, version: 4 };
+          }
+
           return { state: defaults, version: 1 };
         }
 
@@ -158,6 +198,12 @@ export const useDraftStore = create<DraftStore>()(
           // Ensure assets array exists when migrating to v3
           const nextDraft = state.draft ? { ...state.draft, assets: state.draft.assets ?? [] } : null;
           return { state: { ...state, draft: nextDraft }, version: 3 };
+        }
+
+        if (version < 4) {
+          // Add css_inline with default when migrating to v4
+          const nextDraft = state.draft ? { ...state.draft, css_inline: state.draft.css_inline ?? "" } : null;
+          return { state: { ...state, draft: nextDraft }, version: 4 };
         }
 
         return { state, version };
