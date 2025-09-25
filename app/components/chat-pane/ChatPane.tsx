@@ -194,7 +194,7 @@ export default function ChatPane(): ReactElement {
                 message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
               )}
             >
-              <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+              <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
               <div className="mt-1 text-xs opacity-70" suppressHydrationWarning>
                 {new Date(message.timestamp).toLocaleTimeString()}
               </div>
