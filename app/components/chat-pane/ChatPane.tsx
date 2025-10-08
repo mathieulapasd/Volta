@@ -97,7 +97,6 @@ export default function ChatPane(): ReactElement {
 
       if (data.output) {
         const output = JSON.parse(data.output);
-
         setDraft(output);
       }
     } catch (error) {
