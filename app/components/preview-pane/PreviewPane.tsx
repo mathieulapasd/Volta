@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import ZipExportButton from "../ZipExportButton";
 import BlockCustomization from "./BlockCustomization";
 import Code from "./Code";
-import GlobalCustomization from "./GlobalCustomization";
 import Iframe from "./Iframe";
 import ViewModeButton from "./ViewModeButton";
 
@@ -18,12 +17,8 @@ export default function PreviewPane() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex h-15 items-center justify-between border-border border-b bg-primary px-4">
-        <h2 className="font-semibold text-primary-foreground text-xl">
-          {viewMode === "preview" ? "Prévisualisation" : "Code"}
-        </h2>
+      <div className="flex h-15 items-center justify-end border-border border-b bg-primary px-4">
         <div className="flex gap-2">
-          <GlobalCustomization iframeRef={iframeRef} />
           <ViewModeButton />
           <ZipExportButton />
         </div>

@@ -166,7 +166,6 @@ export default function ChatPane(): ReactElement {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
-            <h1 className="font-semibold text-primary-foreground text-xl">Générateur d'e-mail</h1>
           </div>
           <Badge variant="outline" className="text-primary-foreground text-xs">
             v0.1.0
