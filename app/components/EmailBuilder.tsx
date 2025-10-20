@@ -1,5 +1,9 @@
 "use client";
 
+import GjsEditor from "@grapesjs/react";
+import grapesjs, { type Editor } from "grapesjs";
+import { useRef } from "react";
+import EmailEditor, { type EditorRef } from "react-email-editor";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { setCookie } from "@/lib/utils";
@@ -9,7 +13,10 @@ import PreviewPane from "./preview-pane/PreviewPane";
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
   let t: number | undefined;
 
+  const emailEditorRef = useRef<EditorRef>(null);
+
   const hasHydrated = useDraftStore((s) => s._hasHydrated);
+  const draft = useDraftStore((s) => s.draft);
 
   const onLayout = (sizes: number[]) => {
     if (t) {
@@ -19,6 +26,11 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
     t = window.setTimeout(() => {
       setCookie("react-resizable-panels:layout", sizes);
     }, 150);
+  };
+
+  const onEditor = (editor: Editor) => {
+    editor.setComponents(draft?.html_inline ?? "");
+    console.log("Editor loaded", { editor });
   };
 
   if (!hasHydrated) {
@@ -32,7 +44,22 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={props.defaultLayout[1]} minSize={25} order={2}>
-        <PreviewPane />
+        {/* <PreviewPane /> */}
+        {/* <EmailEditor ref={emailEditorRef} /> */}
+        <GjsEditor
+          // Pass the core GrapesJS library to the wrapper (required).
+          // You can also pass the CDN url (eg. "https://unpkg.com/grapesjs")
+          grapesjs={grapesjs}
+          // Load the GrapesJS CSS file asynchronously from URL.
+          // This is an optional prop, you can always import the CSS directly in your JS if you wish.
+          grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
+          // GrapesJS init options
+          options={{
+            height: "100vh",
+            storageManager: false,
+          }}
+          onEditor={onEditor}
+        />
       </ResizablePanel>
     </ResizablePanelGroup>
   );

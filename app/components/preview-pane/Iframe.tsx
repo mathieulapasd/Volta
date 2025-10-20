@@ -82,6 +82,8 @@ export default function Iframe(props: IframeProps) {
           return;
         }
 
+        const me = e as unknown as MouseEvent;
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -89,6 +91,9 @@ export default function Iframe(props: IframeProps) {
           {
             type: "elementClick",
             elementId: el.getAttribute("data-id"),
+            shiftKey: !!me.shiftKey,
+            metaKey: !!(me as MouseEvent).metaKey,
+            ctrlKey: !!(me as MouseEvent).ctrlKey,
           },
           "*"
         );

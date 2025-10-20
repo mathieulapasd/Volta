@@ -23,6 +23,7 @@ import { getCurrentValue, getElement, sanitizeHtml } from "@/lib/emailEditing";
 import type { AttributeName, EmailBlock } from "@/lib/schemas";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { IsolatedColorInput } from "./ColorInput";
+import InlineEditor from "./InlineEditor";
 import { IsolatedSelect } from "./IsolatedSelect";
 import NumberInputWithUnitSelect from "./NumberInputWithUnitSelect";
 
@@ -365,6 +366,7 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
   const manifestRef = useRef(manifest);
 
   const [selectedBlock, setSelectedBlock] = useState<EmailBlock | null>(null);
+  const [inlineBlock, setInlineBlock] = useState<EmailBlock | null>(null);
   const [attrValues, setAttrValues] = useState<Partial<Record<AttributeName, string>>>({});
 
   const debouncedUpdateDraftHtml = useMemo(
@@ -499,13 +501,19 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
   // Set up iframe message handling
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type !== "elementClick") {
+      if (!event?.data || event.data.type !== "elementClick") {
         return;
       }
 
       const block = manifestRef.current?.blocks.find((b) => b.id === event.data.elementId);
 
       if (!block) {
+        return;
+      }
+      // If text is editable and Shift is NOT pressed, start inline editing instead of opening sheet
+      if (block.editable.includes("text") && !event.data.shiftKey) {
+        setInlineBlock(block);
+
         return;
       }
 
@@ -539,24 +547,27 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
   }, [debouncedUpdateDraftHtml]);
 
   return (
-    <Sheet
-      modal={false}
-      open={!!selectedBlock}
-      onOpenChange={(open) => {
-        if (!open) {
-          setSelectedBlock(null);
-        }
-      }}
-    >
-      {selectedBlock && (
-        <MemoBlockCustomizationContent
-          key={selectedBlock.id}
-          selectedBlock={selectedBlock}
-          initialValues={attrValues}
-          onFieldChange={onFieldChange}
-          onFieldBlur={onFieldBlur}
-        />
-      )}
-    </Sheet>
+    <>
+      <InlineEditor iframeRef={props.iframeRef} request={inlineBlock} onFinish={() => setInlineBlock(null)} />
+      <Sheet
+        modal={false}
+        open={!!selectedBlock}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedBlock(null);
+          }
+        }}
+      >
+        {selectedBlock && (
+          <MemoBlockCustomizationContent
+            key={selectedBlock.id}
+            selectedBlock={selectedBlock}
+            initialValues={attrValues}
+            onFieldChange={onFieldChange}
+            onFieldBlur={onFieldBlur}
+          />
+        )}
+      </Sheet>
+    </>
   );
 }
