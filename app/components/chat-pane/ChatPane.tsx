@@ -165,7 +165,7 @@ export default function ChatPane(): ReactElement {
       <div className="h-15 border-border border-b bg-primary p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
+            <Image src="/Logo_Volta_Jaune.png" alt="Logo" width={70} height={40} />
           </div>
           <Badge variant="outline" className="text-primary-foreground text-xs">
             v0.1.0
@@ -183,7 +183,7 @@ export default function ChatPane(): ReactElement {
           >
             {message.role === "assistant" && (
               <div className="flex size-8 items-center justify-center rounded-full bg-primary">
-                <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
+                <Image src="/Logo_chat_Volta.png" alt="Logo" width={32} height={32} />
               </div>
             )}
             <Card
@@ -207,7 +207,7 @@ export default function ChatPane(): ReactElement {
         {isStreaming && (
           <div className="flex items-start space-x-3">
             <div className="flex size-8 items-center justify-center rounded-full bg-primary">
-              <Image src="/logo.JPG" alt="Logo" width={32} height={32} />
+              <Image src="/Logo_chat_Volta.png" alt="Logo" width={32} height={32} />
             </div>
             <Card className="bg-muted p-3">
               <div className="flex space-x-1">
