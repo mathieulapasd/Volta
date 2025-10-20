@@ -29,8 +29,13 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
   };
 
   const onEditor = (editor: Editor) => {
-    editor.setComponents(draft?.html_inline ?? "");
-    console.log("Editor loaded", { editor });
+    if (draft?.html_inline) {
+      editor.setComponents(draft?.html_inline ?? "");
+    } else {
+      editor.setComponents(
+        "<div><section data-gjs-type='section'><h1>Bonjour !</h1></section><div data-gjs-type='div'><p>Ceci est un paragraphe.</p></div></div>"
+      );
+    }
   };
 
   if (!hasHydrated) {
