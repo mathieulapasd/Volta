@@ -2,7 +2,7 @@
 
 import GjsEditor from "@grapesjs/react";
 import grapesjs, { type Editor } from "grapesjs";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useDraftStore } from "@/lib/store/useDraftStore";
@@ -13,6 +13,7 @@ import PreviewPane from "./preview-pane/PreviewPane";
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
   let t: number | undefined;
 
+  const gjsRef = useRef<Editor | null>(null);
   const emailEditorRef = useRef<EditorRef>(null);
 
   const hasHydrated = useDraftStore((s) => s._hasHydrated);
@@ -29,6 +30,7 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
   };
 
   const onEditor = (editor: Editor) => {
+    gjsRef.current = editor;
     if (draft?.html_inline) {
       editor.setComponents(draft?.html_inline ?? "");
     } else {
@@ -37,6 +39,12 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
       );
     }
   };
+
+  useEffect(() => {
+    if (gjsRef.current) {
+      gjsRef.current.setComponents(draft?.html_inline ?? "");
+    }
+  }, [draft?.html_inline]);
 
   if (!hasHydrated) {
     return null;
