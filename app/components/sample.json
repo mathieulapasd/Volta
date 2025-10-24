@@ -1,0 +1,523 @@
+{
+  "counters": {
+    "u_column": 9,
+    "u_row": 9,
+    "u_content_text": 9,
+    "u_content_image": 7,
+    "u_content_button": 2,
+    "u_content_divider": 2,
+    "u_content_social": 1,
+    "u_content_spacer": 3,
+    "u_content_html": 1
+  },
+  "body": {
+    "rows": [
+      {
+        "id": "u_row_preheader",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_preheader",
+            "contents": [
+              {
+                "id": "u_content_text_preheader",
+                "type": "text",
+                "values": {
+                  "containerPadding": "8px 24px",
+                  "text": "<p style=\"font-size:12px; color:#64748b; margin:0;\">Peau apaisée, glow assuré. Précommande -10% aujourd’hui seulement.</p>",
+                  "fontFamily": {
+                    "label": "Inter",
+                    "value": "inter",
+                    "url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+                  },
+                  "lineHeight": "1.6"
+                }
+              }
+            ],
+            "values": {}
+          }
+        ],
+        "values": {
+          "backgroundColor": "#f6f7fb"
+        }
+      },
+      {
+        "id": "u_row_header",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_header",
+            "contents": [
+              {
+                "id": "u_content_image_logo",
+                "type": "image",
+                "values": {
+                  "containerPadding": "16px 24px",
+                  "src": {
+                    "url": "https://assets.unlayer.com/projects/0/1679460472768-kbeauty-logo.png",
+                    "width": 120
+                  },
+                  "textAlign": "left",
+                  "altText": "K-Beauty Lab",
+                  "display": "inline"
+                }
+              }
+            ],
+            "values": {}
+          }
+        ],
+        "values": {
+          "backgroundColor": "#ffffff"
+        }
+      },
+      {
+        "id": "u_row_hero",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_hero",
+            "contents": [
+              {
+                "id": "u_content_image_hero",
+                "type": "image",
+                "values": {
+                  "containerPadding": "0px",
+                  "src": {
+                    "url": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=1200&auto=format&fit=crop",
+                    "width": 600
+                  },
+                  "textAlign": "center",
+                  "altText": "Skin care flatlay",
+                  "display": "full"
+                }
+              },
+              {
+                "id": "u_content_text_headline",
+                "type": "text",
+                "values": {
+                  "containerPadding": "20px 24px 0px",
+                  "text": "<h1 style=\"margin:0; font-size:24px; color:#0f172a;\">Nouvelle routine apaisante</h1><p style=\"margin:8px 0 0; font-size:14px; color:#334155;\">Hydratation profonde, barrière renforcée, glow naturel.</p>"
+                }
+              },
+              {
+                "id": "u_content_button_shop",
+                "type": "button",
+                "values": {
+                  "containerPadding": "16px 24px 24px",
+                  "href": {
+                    "name": "web",
+                    "values": {
+                      "href": "https://example.com/collections/soothing"
+                    }
+                  },
+                  "text": "Découvrir la collection",
+                  "backgroundColor": "#4f46e5",
+                  "borderRadius": "8px",
+                  "color": "#ffffff",
+                  "size": "medium",
+                  "align": "left",
+                  "lineHeight": "1.4",
+                  "padding": "12px 18px"
+                }
+              }
+            ],
+            "values": {}
+          }
+        ],
+        "values": {
+          "backgroundColor": "#ffffff"
+        }
+      },
+      {
+        "id": "u_row_intro",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_intro",
+            "contents": [
+              {
+                "id": "u_content_text_intro",
+                "type": "text",
+                "values": {
+                  "containerPadding": "0 24px 8px",
+                  "text": "<p style=\"margin:0; font-size:14px; color:#334155;\">안녕하세요 {{first_name}}, voici nos essentiels inspirés des routines coréennes : ingrédients doux (마데카소사이드, 센텔라), textures légères, efficacité prouvée.</p>"
+                }
+              },
+              {
+                "id": "u_content_divider_intro",
+                "type": "divider",
+                "values": {
+                  "containerPadding": "8px 24px 0",
+                  "border": {
+                    "borderTopWidth": "1px",
+                    "borderTopStyle": "solid",
+                    "borderTopColor": "#e2e8f0"
+                  }
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "values": {}
+      },
+      {
+        "id": "u_row_products_title",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_products_title",
+            "contents": [
+              {
+                "id": "u_content_text_products_title",
+                "type": "text",
+                "values": {
+                  "containerPadding": "20px 24px 8px",
+                  "text": "<h2 style=\"margin:0; font-size:18px; color:#0f172a;\">Sélection calmante</h2>"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "values": {}
+      },
+      {
+        "id": "u_row_products",
+        "cells": [1, 1, 1],
+        "columns": [
+          {
+            "id": "u_column_prod_1",
+            "contents": [
+              {
+                "id": "u_content_image_prod_1",
+                "type": "image",
+                "values": {
+                  "containerPadding": "8px 12px 8px 24px",
+                  "src": {
+                    "url": "https://images.unsplash.com/photo-1585238342028-4bbc6df67a06?q=80&w=900&auto=format&fit=crop",
+                    "width": 168
+                  },
+                  "textAlign": "center",
+                  "altText": "Toner Cica",
+                  "display": "full"
+                }
+              },
+              {
+                "id": "u_content_text_prod_1",
+                "type": "text",
+                "values": {
+                  "containerPadding": "0 12px 8px 24px",
+                  "text": "<p style=\"margin:0; font-size:14px; color:#0f172a; font-weight:600;\">Cica Toner</p><p style=\"margin:6px 0 0; font-size:13px; color:#475569;\">pH 5.5, 센텔라 10%</p>"
+                }
+              },
+              {
+                "id": "u_content_button_prod_1",
+                "type": "button",
+                "values": {
+                  "containerPadding": "0 12px 16px 24px",
+                  "href": {
+                    "name": "web",
+                    "values": {
+                      "href": "https://example.com/p/cica-toner"
+                    }
+                  },
+                  "text": "Voir",
+                  "backgroundColor": "#0f172a",
+                  "borderRadius": "6px",
+                  "color": "#ffffff",
+                  "size": "small",
+                  "align": "left",
+                  "padding": "10px 14px"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          },
+          {
+            "id": "u_column_prod_2",
+            "contents": [
+              {
+                "id": "u_content_image_prod_2",
+                "type": "image",
+                "values": {
+                  "containerPadding": "8px 12px",
+                  "src": {
+                    "url": "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?q=80&w=900&auto=format&fit=crop",
+                    "width": 168
+                  },
+                  "textAlign": "center",
+                  "altText": "Essence Green Tea",
+                  "display": "full"
+                }
+              },
+              {
+                "id": "u_content_text_prod_2",
+                "type": "text",
+                "values": {
+                  "containerPadding": "0 12px 8px",
+                  "text": "<p style=\"margin:0; font-size:14px; color:#0f172a; font-weight:600;\">Essence Thé Vert</p><p style=\"margin:6px 0 0; font-size:13px; color:#475569;\">항산화 · hydratation</p>"
+                }
+              },
+              {
+                "id": "u_content_button_prod_2",
+                "type": "button",
+                "values": {
+                  "containerPadding": "0 12px 16px",
+                  "href": {
+                    "name": "web",
+                    "values": {
+                      "href": "https://example.com/p/green-tea-essence"
+                    }
+                  },
+                  "text": "Voir",
+                  "backgroundColor": "#0f172a",
+                  "borderRadius": "6px",
+                  "color": "#ffffff",
+                  "size": "small",
+                  "align": "left",
+                  "padding": "10px 14px"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          },
+          {
+            "id": "u_column_prod_3",
+            "contents": [
+              {
+                "id": "u_content_image_prod_3",
+                "type": "image",
+                "values": {
+                  "containerPadding": "8px 24px 8px 12px",
+                  "src": {
+                    "url": "https://images.unsplash.com/photo-1604881980929-6cbd9d2c7d8e?q=80&w=900&auto=format&fit=crop",
+                    "width": 168
+                  },
+                  "textAlign": "center",
+                  "altText": "Crème Céramides",
+                  "display": "full"
+                }
+              },
+              {
+                "id": "u_content_text_prod_3",
+                "type": "text",
+                "values": {
+                  "containerPadding": "0 24px 8px 12px",
+                  "text": "<p style=\"margin:0; font-size:14px; color:#0f172a; font-weight:600;\">Crème Céramides</p><p style=\"margin:6px 0 0; font-size:13px; color:#475569;\">barrière forte, sans parfum</p>"
+                }
+              },
+              {
+                "id": "u_content_button_prod_3",
+                "type": "button",
+                "values": {
+                  "containerPadding": "0 24px 16px 12px",
+                  "href": {
+                    "name": "web",
+                    "values": {
+                      "href": "https://example.com/p/ceramide-cream"
+                    }
+                  },
+                  "text": "Voir",
+                  "backgroundColor": "#0f172a",
+                  "borderRadius": "6px",
+                  "color": "#ffffff",
+                  "size": "small",
+                  "align": "left",
+                  "padding": "10px 14px"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "values": {
+          "backgroundColor": "#ffffff"
+        }
+      },
+      {
+        "id": "u_row_testimonial",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_testimonial",
+            "contents": [
+              {
+                "id": "u_content_divider_testimonial",
+                "type": "divider",
+                "values": {
+                  "containerPadding": "8px 24px 0",
+                  "border": {
+                    "borderTopWidth": "1px",
+                    "borderTopStyle": "solid",
+                    "borderTopColor": "#e2e8f0"
+                  }
+                }
+              },
+              {
+                "id": "u_content_text_quote",
+                "type": "text",
+                "values": {
+                  "containerPadding": "16px 24px 0",
+                  "text": "<p style=\"margin:0; font-size:14px; color:#0f172a;\">“Après 2 semaines ma peau est moins rouge et plus souple. Texture légère parfaite pour Séoul.” — <strong>지수</strong></p>"
+                }
+              },
+              {
+                "id": "u_content_text_sub",
+                "type": "text",
+                "values": {
+                  "containerPadding": "6px 24px 16px",
+                  "text": "<p style=\"margin:0; font-size:12px; color:#64748b;\">Résultats rapportés par des clientes, peuvent varier.</p>"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "values": {}
+      },
+      {
+        "id": "u_row_tips",
+        "cells": [1, 1],
+        "columns": [
+          {
+            "id": "u_column_tip_1",
+            "contents": [
+              {
+                "id": "u_content_text_tip_1",
+                "type": "text",
+                "values": {
+                  "containerPadding": "16px 24px",
+                  "text": "<h3 style=\"margin:0; font-size:16px; color:#0f172a;\">Astuce: 60s rule</h3><p style=\"margin:6px 0 0; font-size:13px; color:#475569;\">Applique le toner dans la minute après le nettoyage pour sceller l’hydratation.</p>"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          },
+          {
+            "id": "u_column_tip_2",
+            "contents": [
+              {
+                "id": "u_content_text_tip_2",
+                "type": "text",
+                "values": {
+                  "containerPadding": "16px 24px",
+                  "text": "<h3 style=\"margin:0; font-size:16px; color:#0f172a;\">UV d’hiver</h3><p style=\"margin:6px 0 0; font-size:13px; color:#475569;\">SPF même par temps gris à Séoul: rayons UV passent les nuages.</p>"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "values": {}
+      },
+      {
+        "id": "u_row_cta",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_cta",
+            "contents": [
+              {
+                "id": "u_content_button_cta",
+                "type": "button",
+                "values": {
+                  "containerPadding": "12px 24px 24px",
+                  "href": {
+                    "name": "web",
+                    "values": {
+                      "href": "https://example.com/checkout?coupon=KBEAUTY10"
+                    }
+                  },
+                  "text": "Précommander -10%",
+                  "backgroundColor": "#16a34a",
+                  "borderRadius": "8px",
+                  "color": "#ffffff",
+                  "size": "medium",
+                  "align": "left",
+                  "padding": "12px 18px"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "values": {}
+      },
+      {
+        "id": "u_row_footer",
+        "cells": [1],
+        "columns": [
+          {
+            "id": "u_column_footer",
+            "contents": [
+              {
+                "id": "u_content_social",
+                "type": "social",
+                "values": {
+                  "containerPadding": "16px 24px 8px",
+                  "align": "left",
+                  "icons": [
+                    { "url": "https://instagram.com/yourbrand", "name": "Instagram" },
+                    { "url": "https://www.youtube.com/@yourbrand", "name": "YouTube" }
+                  ],
+                  "iconSpacing": "12px"
+                }
+              },
+              {
+                "id": "u_content_text_address",
+                "type": "text",
+                "values": {
+                  "containerPadding": "0 24px 8px",
+                  "text": "<p style=\"margin:0; font-size:12px; color:#94a3b8;\">K-Beauty Lab · 서울특별시 · Namyangju</p>"
+                }
+              },
+              {
+                "id": "u_content_html_unsub",
+                "type": "html",
+                "values": {
+                  "containerPadding": "0 24px 24px",
+                  "html": "<p style='margin:0; font-size:12px; color:#94a3b8;'>Vous recevez cet email car vous vous êtes inscrit(e). <a href='{{unsubscribe_url}}' style='color:#64748b;'>Se désabonner</a> · <a href='{{webview_url}}' style='color:#64748b;'>Version web</a></p>"
+                }
+              }
+            ],
+            "values": {
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "values": {}
+      }
+    ],
+    "values": {
+      "backgroundColor": "#f6f7fb",
+      "contentWidth": "600px",
+      "fontFamily": {
+        "label": "Inter",
+        "value": "inter",
+        "url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap",
+        "defaultFontFamily": "Arial, Helvetica, sans-serif"
+      },
+      "preheaderText": "Hydratation douce, barrière renforcée, glow coréen."
+    }
+  },
+  "schemaVersion": 12
+}

@@ -4,20 +4,20 @@ import GjsEditor from "@grapesjs/react";
 import grapesjs, { type Editor } from "grapesjs";
 import { useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
+import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { setCookie } from "@/lib/utils";
 import ChatPane from "./chat-pane/ChatPane";
 import PreviewPane from "./preview-pane/PreviewPane";
+import sample from "./sample.json";
 
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
   let t: number | undefined;
 
-  const gjsRef = useRef<Editor | null>(null);
   const emailEditorRef = useRef<EditorRef>(null);
 
   const hasHydrated = useDraftStore((s) => s._hasHydrated);
-  const draft = useDraftStore((s) => s.draft);
 
   const onLayout = (sizes: number[]) => {
     if (t) {
@@ -29,22 +29,31 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
     }, 150);
   };
 
-  const onEditor = (editor: Editor) => {
-    gjsRef.current = editor;
-    if (draft?.html_inline) {
-      editor.setComponents(draft?.html_inline ?? "");
-    } else {
-      editor.setComponents(
-        "<div><section data-gjs-type='section'><h1>Bonjour !</h1></section><div data-gjs-type='div'><p>Ceci est un paragraphe.</p></div></div>"
-      );
+  const handleExport = () => {
+    const emailEditor = emailEditorRef.current;
+
+    if (emailEditor?.editor) {
+      console.log("ICI");
+      emailEditor.editor.exportHtml((data) => {
+        if (data.html) {
+          // Export the HTML by creating a blob and triggering a download
+          const blob = new Blob([data.html], { type: "text/html" });
+
+          const url = URL.createObjectURL(blob);
+
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "email.html";
+
+          document.body.appendChild(link);
+          link.click();
+
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      });
     }
   };
-
-  useEffect(() => {
-    if (gjsRef.current) {
-      gjsRef.current.setComponents(draft?.html_inline ?? "");
-    }
-  }, [draft?.html_inline]);
 
   if (!hasHydrated) {
     return null;
@@ -58,8 +67,26 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={props.defaultLayout[1]} minSize={25} order={2}>
         {/* <PreviewPane /> */}
-        {/* <EmailEditor ref={emailEditorRef} /> */}
-        <GjsEditor
+        <Button onClick={handleExport}>Export ZIP</Button>
+        <EmailEditor
+          ref={emailEditorRef}
+          minHeight="95vh"
+          options={{
+            locale: "en-US",
+            translations: {
+              "en-US": {
+                "tools.tabs.content": "Contenu",
+                "tools.tabs.blocks": "Blocs",
+                "tools.tabs.body": "Corps",
+              },
+            },
+            customCSS: ".blockbuilder-branding { display: none !important; }",
+          }}
+          onReady={(editor) => {
+            editor.loadDesign(sample as any);
+          }}
+        />
+        {/* <GjsEditor
           // Pass the core GrapesJS library to the wrapper (required).
           // You can also pass the CDN url (eg. "https://unpkg.com/grapesjs")
           grapesjs={grapesjs}
@@ -72,7 +99,7 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
             storageManager: false,
           }}
           onEditor={onEditor}
-        />
+        /> */}
       </ResizablePanel>
     </ResizablePanelGroup>
   );
