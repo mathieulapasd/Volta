@@ -98,7 +98,12 @@ export default function ChatPane(): ReactElement {
       if (data.output) {
         const output = JSON.parse(data.output);
 
-        setUnlayerDesign(output);
+        if (output.unlayer_design) {
+
+          setUnlayerDesign(output.unlayer_design);
+        } else {
+          console.error("[ChatPane] No unlayer_design found in output");
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);

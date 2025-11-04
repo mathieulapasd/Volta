@@ -53,7 +53,7 @@ const emailGenerationResultSchema = z.object({
 });
 
 // Configuration de l'agent Python
-const AGENT_BASE_URL = process.env.EMAIL_AGENT_URL || "https://agent-volta-staging-427210296529.europe-west1.run.app";
+const AGENT_BASE_URL = process.env.EMAIL_AGENT_URL || "http://localhost:8000";
 const REQUEST_TIMEOUT = Number.parseInt(process.env.EMAIL_AGENT_TIMEOUT || "300000", 10);
 const MAX_RETRIES = Number.parseInt(process.env.EMAIL_AGENT_MAX_RETRIES || "2", 10);
 
@@ -79,8 +79,6 @@ async function callEmailAgent(
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
   try {
-    // Log de la tentative
-    console.log(`[EmailAgent] Attempt ${retryCount + 1}/${MAX_RETRIES + 1} - Calling ${FETCH_URL}`);
 
     // Préparer la requête
     const requestBody = {
@@ -134,11 +132,13 @@ async function callEmailAgent(
     // Parser et valider la réponse
     const rawData = await response.json();
 
+
     // Validation stricte avec Zod
     const validationResult = emailGenerationResultSchema.safeParse(rawData);
 
     if (!validationResult.success) {
       console.error("[EmailAgent] Invalid response format:", validationResult.error);
+      console.error("[EmailAgent] Received data:", JSON.stringify(rawData, null, 2));
 
       return {
         success: false,
@@ -146,8 +146,6 @@ async function callEmailAgent(
         status: 502,
       };
     }
-
-    console.log("[EmailAgent] Success - Email generated");
 
     return {
       success: true,
@@ -219,66 +217,22 @@ function convertAgentResponseToBuilderFormat(agentData: EmailGenerationResult) {
 
   const font = fontMapping[agentData.config.font_family] || "arial";
 
-  // Mapper les propriétés editable de l'agent vers les attributs builder-crm
-  const editableMapping: Record<string, string> = {
-    logo_url: "src",
-    logo_alt: "alt",
-    image_url: "src",
-    image_alt: "alt",
-    background_color: "bgcolor",
-    text_color: "color",
-    subtitle: "text",
-    title: "text",
-    alignment: "textAlign",
-    company_name: "text",
-    address: "text",
-    unsubscribe_url: "href",
-    social_links: "href",
-    url: "href",
+  // Pour l'instant, on retourne directement les données de l'agent
+  // en les structurant pour le frontend
+  const builderFormat = {
+    unlayer_design: agentData.unlayer_design,
+    config: {
+      font: font,
+      primaryColor: agentData.config.primary_color || agentData.config.primaryColor,
+      width: agentData.config.width,
+      fontFamily: agentData.config.font_family,
+      textColor: agentData.config.text_color,
+      backgroundColor: agentData.config.background_color,
+    },
   };
 
-  // // Convertir les blocs avec mapping des propriétés editable
-  // const convertedBlocks = agentData.manifest.blocks.map((block) => ({
-  //   ...block,
-  //   editable: block.editable
-  //     .map((prop) => editableMapping[prop] || prop)
-  //     .filter((prop) =>
-  //       // Garder seulement les propriétés valides selon le schéma builder-crm
-  //       [
-  //         "text",
-  //         "src",
-  //         "href",
-  //         "alt",
-  //         "bgcolor",
-  //         "color",
-  //         "width",
-  //         "height",
-  //         "target",
-  //         "fontSize",
-  //         "fontWeight",
-  //         "textAlign",
-  //         "lineHeight",
-  //         "padding",
-  //         "borderRadius",
-  //       ].includes(prop)
-  //     ),
-  // }));
 
-  // // Convertir au format builder-crm
-  // const builderFormat = {
-  //   css_inline: "", // builder-crm génère son propre CSS
-  //   html_inline: agentData.html_inline,
-  //   manifest: {
-  //     blocks: convertedBlocks,
-  //   },
-  //   config: {
-  //     font: font,
-  //     primaryColor: agentData.config.primary_color,
-  //   },
-  //   assets: agentData.assets || [],
-  // };
-
-  // return builderFormat;
+  return builderFormat;
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -352,6 +306,7 @@ export async function POST(request: Request): Promise<Response> {
     if (result.success) {
       // Convertir au format builder-crm et encapsuler dans output
       const builderData = convertAgentResponseToBuilderFormat(result.data);
+
       return Response.json(
         {
           output: JSON.stringify(builderData),
