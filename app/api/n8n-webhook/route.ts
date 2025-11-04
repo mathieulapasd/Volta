@@ -54,7 +54,7 @@ const emailGenerationResultSchema = z.object({
 });
 
 // Configuration de l'agent Python
-const AGENT_BASE_URL = process.env.EMAIL_AGENT_URL || "http://localhost:8000";
+const AGENT_BASE_URL = process.env.EMAIL_AGENT_URL || "https://agent-volta-staging-427210296529.europe-west1.run.app";
 const REQUEST_TIMEOUT = Number.parseInt(process.env.EMAIL_AGENT_TIMEOUT || "300000", 10);
 const MAX_RETRIES = Number.parseInt(process.env.EMAIL_AGENT_MAX_RETRIES || "2", 10);
 
