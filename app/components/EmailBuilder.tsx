@@ -1,15 +1,14 @@
 "use client";
 
-import GjsEditor from "@grapesjs/react";
-import grapesjs, { type Editor } from "grapesjs";
+import { Download } from "lucide-react";
 import { useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import type { UnlayerDesign } from "@/lib/schemas";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { setCookie } from "@/lib/utils";
 import ChatPane from "./chat-pane/ChatPane";
-import PreviewPane from "./preview-pane/PreviewPane";
 import sample from "./sample.json";
 
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
@@ -18,6 +17,15 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
   const emailEditorRef = useRef<EditorRef>(null);
 
   const hasHydrated = useDraftStore((s) => s._hasHydrated);
+  const unlayerDesign = useDraftStore((s) => s.unlayerDesign);
+
+  useEffect(() => {
+    console.log("unlayerDesign", unlayerDesign);
+
+    if (unlayerDesign) {
+      emailEditorRef.current?.editor?.loadDesign(unlayerDesign);
+    }
+  }, [unlayerDesign]);
 
   const onLayout = (sizes: number[]) => {
     if (t) {
@@ -33,7 +41,6 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
     const emailEditor = emailEditorRef.current;
 
     if (emailEditor?.editor) {
-      console.log("ICI");
       emailEditor.editor.exportHtml((data) => {
         if (data.html) {
           // Export the HTML by creating a blob and triggering a download
@@ -66,8 +73,12 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={props.defaultLayout[1]} minSize={25} order={2}>
-        {/* <PreviewPane /> */}
-        <Button onClick={handleExport}>Export ZIP</Button>
+        <div className="flex h-15 items-center justify-end border-border border-b bg-primary px-4">
+          <Button onClick={handleExport} variant="outline" size="sm">
+            <Download />
+            Exporter ZIP
+          </Button>
+        </div>
         <EmailEditor
           ref={emailEditorRef}
           minHeight="95vh"
@@ -83,23 +94,13 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
             customCSS: ".blockbuilder-branding { display: none !important; }",
           }}
           onReady={(editor) => {
-            editor.loadDesign(sample as any);
+            if (unlayerDesign) {
+              editor.loadDesign(unlayerDesign);
+            } else {
+              editor.loadDesign(sample as unknown as UnlayerDesign);
+            }
           }}
         />
-        {/* <GjsEditor
-          // Pass the core GrapesJS library to the wrapper (required).
-          // You can also pass the CDN url (eg. "https://unpkg.com/grapesjs")
-          grapesjs={grapesjs}
-          // Load the GrapesJS CSS file asynchronously from URL.
-          // This is an optional prop, you can always import the CSS directly in your JS if you wish.
-          grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
-          // GrapesJS init options
-          options={{
-            height: "100vh",
-            storageManager: false,
-          }}
-          onEditor={onEditor}
-        /> */}
       </ResizablePanel>
     </ResizablePanelGroup>
   );

@@ -13,7 +13,7 @@ import { useDraftStore } from "@/lib/store/useDraftStore";
 import { cn } from "@/lib/utils";
 
 export default function ChatPane(): ReactElement {
-  const setDraft = useDraftStore((s) => s.setDraft);
+  const setUnlayerDesign = useDraftStore((s) => s.setUnlayerDesign);
 
   const messages = useChatStore((s) => s.messages);
   const appendMessage = useChatStore((s) => s.appendMessage);
@@ -97,7 +97,8 @@ export default function ChatPane(): ReactElement {
 
       if (data.output) {
         const output = JSON.parse(data.output);
-        setDraft(output);
+
+        setUnlayerDesign(output);
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -165,7 +166,7 @@ export default function ChatPane(): ReactElement {
       <div className="h-15 border-border border-b bg-primary p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image src="/Logo_Volta_Jaune.png" alt="Logo" width={70} height={40} />
+            <Image src="/Logo_Volta_Jaune.png" alt="Logo" width={80} height={40} />
           </div>
           <Badge variant="outline" className="text-primary-foreground text-xs">
             v0.1.0
@@ -182,8 +183,8 @@ export default function ChatPane(): ReactElement {
             className={cn("flex items-start space-x-3", message.role === "user" ? "justify-end" : "justify-start")}
           >
             {message.role === "assistant" && (
-              <div className="flex size-8 items-center justify-center rounded-full bg-primary">
-                <Image src="/Logo_chat_Volta.png" alt="Logo" width={32} height={32} />
+              <div className="flex size-9 items-center justify-center rounded-full bg-primary">
+                <Image src="/Logo_chat_Volta.png" alt="Logo" width={40} height={40} />
               </div>
             )}
             <Card

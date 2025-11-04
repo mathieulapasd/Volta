@@ -3,16 +3,18 @@
 import { z } from "zod";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { type EmailAsset, type EmailDraft, emailDraftSchema } from "@/lib/schemas";
+import { type EmailAsset, type EmailDraft, emailDraftSchema, type UnlayerDesign } from "@/lib/schemas";
 
 interface DraftState {
   draft: EmailDraft | null;
+  unlayerDesign: UnlayerDesign | null;
   viewMode: "preview" | "html";
   _hasHydrated: boolean;
 }
 
 interface DraftActions {
   setDraft: (draft: EmailDraft) => void;
+  setUnlayerDesign: (unlayerDesign: UnlayerDesign) => void;
   resetDraft: () => void;
 
   updateDraftHtml: (html: string) => void;
@@ -34,6 +36,7 @@ export const useDraftStore = create<DraftStore>()(
   persist(
     (set, get) => ({
       draft: null,
+      unlayerDesign: null,
       viewMode: "preview",
       _hasHydrated: false,
 
@@ -47,6 +50,10 @@ export const useDraftStore = create<DraftStore>()(
         }
 
         set({ draft: parsed.data });
+      },
+
+      setUnlayerDesign: (unlayerDesign) => {
+        set({ unlayerDesign });
       },
 
       resetDraft: () => {
@@ -140,7 +147,7 @@ export const useDraftStore = create<DraftStore>()(
         };
       },
       migrate: (persisted, version) => {
-        const defaults: DraftState = { draft: null, viewMode: "preview", _hasHydrated: false };
+        const defaults: DraftState = { draft: null, unlayerDesign: null, viewMode: "preview", _hasHydrated: false };
 
         // Extract inner state, validate with zod; avoid passthrough
         const candidateState = (persisted as { state?: unknown } | null)?.state;
@@ -172,6 +179,7 @@ export const useDraftStore = create<DraftStore>()(
                     assets: legacyDraft.assets ?? [],
                   } as EmailDraft)
                 : null,
+              unlayerDesign: null,
               viewMode: "preview",
               _hasHydrated: false,
             };
@@ -186,6 +194,7 @@ export const useDraftStore = create<DraftStore>()(
 
         const state: DraftState = {
           draft: validated.draft,
+          unlayerDesign: null,
           viewMode: "preview",
           _hasHydrated: false,
         };

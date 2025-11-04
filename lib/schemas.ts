@@ -77,9 +77,37 @@ export const emailDraftSchema = z.object({
     .default([]),
 });
 
+export const unlayerDesignSchema = z.object({
+  counters: z.record(z.string(), z.number()),
+  body: z.object({
+    id: z.string(),
+    rows: z.array(
+      z.object({
+        id: z.string(),
+        cells: z.array(z.number()),
+        columns: z.array(z.any()),
+        values: z.object(),
+      })
+    ),
+    headers: z.array(z.any()).default([]).catch([]),
+    footers: z.array(z.any()).default([]).catch([]),
+    values: z.object({
+      contentWidth: z.string(),
+      fontFamily: z.object({
+        label: z.string(),
+        value: z.string(),
+      }),
+      textColor: z.string(),
+      backgroundColor: z.string(),
+    }),
+  }),
+  schemaVersion: z.number(),
+});
+
 export type EmailMessage = z.infer<typeof emailMessageSchema>;
 export type EmailBlock = z.infer<typeof emailBlockSchema>;
 export type EmailDraft = z.infer<typeof emailDraftSchema>;
 export type AttributeName = z.infer<typeof attributeEnum>;
 export type GlobalAttributeName = z.infer<typeof globalAttributeEnum>;
 export type EmailAsset = EmailDraft["assets"][number];
+export type UnlayerDesign = z.infer<typeof unlayerDesignSchema>;
