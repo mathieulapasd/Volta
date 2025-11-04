@@ -42,6 +42,7 @@ const emailGenerationResultSchema = z.object({
     font: z.string(),
     primaryColor: z.string(),
   }),
+  agent_response: z.string().optional(), // Réponse human-friendly de l'agent pour le chat
   // assets: z.array(
   //   z.object({
   //     id: z.string(),
@@ -131,7 +132,6 @@ async function callEmailAgent(
 
     // Parser et valider la réponse
     const rawData = await response.json();
-
 
     // Validation stricte avec Zod
     const validationResult = emailGenerationResultSchema.safeParse(rawData);
