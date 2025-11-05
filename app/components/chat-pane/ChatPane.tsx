@@ -1,6 +1,6 @@
 "use client";
 
-import { Paperclip, Send, User, X } from "lucide-react";
+import { LogOut, Paperclip, Send, User, X } from "lucide-react";
 import Image from "next/image";
 import { type ChangeEvent, type ReactElement, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,9 @@ import type { EmailMessage } from "@/lib/schemas";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import Footer from "../Footer";
 
 export default function ChatPane(): ReactElement {
   const setUnlayerDesign = useDraftStore((s) => s.setUnlayerDesign);
@@ -18,6 +21,8 @@ export default function ChatPane(): ReactElement {
   const messages = useChatStore((s) => s.messages);
   const appendMessage = useChatStore((s) => s.appendMessage);
   // const incrementTokens = useChatStore((s) => s.incrementTokens);
+
+  const router = useRouter();
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -165,20 +170,28 @@ export default function ChatPane(): ReactElement {
     setSelectedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
+  const handleLogout = async () => {
+    const supabase = await createClient();
+
+    await supabase.auth.signOut();
+
+    router.push("/login");
+  };
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="h-15 border-border border-b bg-primary p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      <div className="h-15 border-border border-b bg-primary px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 mt-1">
             <Image src="/Logo_Volta_Jaune.png" alt="Logo" width={80} height={40} />
           </div>
-          <Badge variant="outline" className="text-primary-foreground text-xs">
-            v0.1.0
-          </Badge>
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut />
+            Se déconnecter
+          </Button>
+         
           {/* <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div> */}
         </div>
-      </div>
 
       {/* Messages */}
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -198,7 +211,7 @@ export default function ChatPane(): ReactElement {
                 message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
               )}
             >
-              <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
+              <p className="whitespace-pre-wrap wrap-break-words text-sm">{message.content}</p>
               <div className="mt-1 text-xs opacity-70" suppressHydrationWarning>
                 {new Date(message.timestamp).toLocaleTimeString()}
               </div>
@@ -273,6 +286,7 @@ export default function ChatPane(): ReactElement {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

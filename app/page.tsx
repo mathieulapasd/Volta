@@ -12,12 +12,8 @@ export default async function Home() {
   }
 
   return (
-    <>
-      <main className="flex h-[calc(100vh-50px)] bg-background">
-        <EmailBuilder defaultLayout={defaultLayout} />
-      </main>
-
-      <Footer />
-    </>
+    <main className="flex h-screen bg-background">
+      <EmailBuilder defaultLayout={defaultLayout} />
+    </main>
   );
 }

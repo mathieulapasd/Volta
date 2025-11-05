@@ -1,7 +1,7 @@
 "use client";
 
 import { Download } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -15,13 +15,12 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
   let t: number | undefined;
 
   const emailEditorRef = useRef<EditorRef>(null);
+  const editorHostRef = useRef<HTMLDivElement | null>(null);
 
   const hasHydrated = useDraftStore((s) => s._hasHydrated);
   const unlayerDesign = useDraftStore((s) => s.unlayerDesign);
 
   useEffect(() => {
-    console.log("unlayerDesign", unlayerDesign);
-
     if (unlayerDesign) {
       emailEditorRef.current?.editor?.loadDesign(unlayerDesign);
     }
@@ -36,6 +35,41 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
       setCookie("react-resizable-panels:layout", sizes);
     }, 150);
   };
+
+  const clearEditorSelection = useCallback(() => {
+    const instance = emailEditorRef.current?.editor;
+
+    if (!instance) {
+      return;
+    }
+
+    // Simple and reliable: re-load current design, which clears selection
+    instance.saveDesign((design: UnlayerDesign) => {
+      instance.loadDesign(design);
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const host = editorHostRef.current;
+
+      if (!host) {
+        return;
+      }
+
+      const target = event.target as Node | null;
+
+      if (target && !host.contains(target)) {
+        clearEditorSelection();
+      }
+    };
+
+    document.addEventListener("mousedown", handleDocumentClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentClick);
+    };
+  }, [clearEditorSelection]);
 
   const handleExport = () => {
     const emailEditor = emailEditorRef.current;
@@ -79,28 +113,33 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
             Exporter ZIP
           </Button>
         </div>
-        <EmailEditor
-          ref={emailEditorRef}
-          minHeight="95vh"
-          options={{
-            locale: "en-US",
-            translations: {
-              "en-US": {
-                "tools.tabs.content": "Contenu",
-                "tools.tabs.blocks": "Blocs",
-                "tools.tabs.body": "Corps",
+        <div ref={editorHostRef}>
+          <EmailEditor
+            ref={emailEditorRef}
+            minHeight="95vh"
+            options={{
+              locale: "en-US",
+              translations: {
+                "en-US": {
+                  "tools.tabs.content": "Contenu",
+                  "tools.tabs.blocks": "Blocs",
+                  "tools.tabs.body": "Corps",
+                },
               },
-            },
-            customCSS: ".blockbuilder-branding { display: none !important; }",
-          }}
-          onReady={(editor) => {
-            if (unlayerDesign) {
-              editor.loadDesign(unlayerDesign);
-            } else {
-              editor.loadDesign(sample as unknown as UnlayerDesign);
-            }
-          }}
-        />
+            }}
+            onReady={(editor) => {
+              if (unlayerDesign) {
+                editor.init({
+
+                })
+                editor.loadDesign(unlayerDesign);
+              } else {
+                editor.loadDesign(sample as unknown as UnlayerDesign);
+              }
+            }}
+          />
+          {/* <div className="absolute bottom-0 right-0 bg-gray-50 w-106 h-9" /> */}
+        </div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );
