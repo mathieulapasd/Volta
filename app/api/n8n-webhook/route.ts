@@ -12,6 +12,7 @@
 
 import { z } from "zod";
 import { unlayerDesignSchema } from "@/lib/schemas";
+import { createClient } from "@/utils/supabase/server";
 
 // Schema de validation pour les requêtes JSON
 const JsonRequestBodySchema = z.object({
@@ -42,7 +43,7 @@ const emailGenerationResultSchema = z.object({
     font: z.string(),
     primaryColor: z.string(),
   }),
-  agent_response: z.string().optional(), // Réponse human-friendly de l'agent pour le chat
+  agent_response: z.string(),
   // assets: z.array(
   //   z.object({
   //     id: z.string(),
@@ -79,11 +80,25 @@ async function callEmailAgent(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
-  try {
+  const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      success: false,
+      error: "User not found",
+      status: 401,
+    };
+  }
+
+  try {
     // Préparer la requête
     const requestBody = {
-      message: message,
+      auth_id: user.id,
+      message,
       tone: "journalistic",
       context:
         files && files.length > 0
@@ -92,6 +107,8 @@ async function callEmailAgent(
             }
           : undefined,
     };
+
+    // Client-side sync handles persisting user messages to avoid duplicates
 
     const response = await fetch(FETCH_URL, {
       method: "POST",
@@ -146,6 +163,12 @@ async function callEmailAgent(
         status: 502,
       };
     }
+
+    await supabase.from("messages").insert({
+      auth_id: user.id,
+      unlayer_design: JSON.stringify(validationResult.data.unlayer_design),
+      message: validationResult.data.agent_response,
+    });
 
     return {
       success: true,
@@ -229,8 +252,9 @@ function convertAgentResponseToBuilderFormat(agentData: EmailGenerationResult) {
       textColor: agentData.config.text_color,
       backgroundColor: agentData.config.background_color,
     },
+    // Surface agent chat response for UI consumption
+    agent_response: agentData.agent_response,
   };
-
 
   return builderFormat;
 }

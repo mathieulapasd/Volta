@@ -20,8 +20,11 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
   const hasHydrated = useDraftStore((s) => s._hasHydrated);
   const unlayerDesign = useDraftStore((s) => s.unlayerDesign);
 
+  console.log("unlayerDesign", unlayerDesign);
+
   useEffect(() => {
     if (unlayerDesign) {
+      console.log("ICI", unlayerDesign);
       emailEditorRef.current?.editor?.loadDesign(unlayerDesign);
     }
   }, [unlayerDesign]);
@@ -128,10 +131,8 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
               },
             }}
             onReady={(editor) => {
+              console.log("onReady", unlayerDesign);
               if (unlayerDesign) {
-                editor.init({
-
-                })
                 editor.loadDesign(unlayerDesign);
               } else {
                 editor.loadDesign(sample as unknown as UnlayerDesign);

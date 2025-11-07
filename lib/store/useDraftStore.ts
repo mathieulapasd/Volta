@@ -3,7 +3,13 @@
 import { z } from "zod";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { type EmailAsset, type EmailDraft, emailDraftSchema, type UnlayerDesign } from "@/lib/schemas";
+import {
+  type EmailAsset,
+  type EmailDraft,
+  emailDraftSchema,
+  type UnlayerDesign,
+  unlayerDesignSchema,
+} from "@/lib/schemas";
 
 interface DraftState {
   draft: EmailDraft | null;
@@ -135,7 +141,7 @@ export const useDraftStore = create<DraftStore>()(
     }),
     {
       name: "email-builder-store",
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: (state) => {
         return () => {
@@ -154,6 +160,7 @@ export const useDraftStore = create<DraftStore>()(
 
         const stateSchema = z.object({
           draft: emailDraftSchema.nullable(),
+          unlayerDesign: unlayerDesignSchema.nullable().optional(),
         });
 
         const parsedState = stateSchema.safeParse(candidateState);
@@ -194,7 +201,7 @@ export const useDraftStore = create<DraftStore>()(
 
         const state: DraftState = {
           draft: validated.draft,
-          unlayerDesign: null,
+          unlayerDesign: validated.unlayerDesign ?? null,
           viewMode: "preview",
           _hasHydrated: false,
         };
@@ -215,10 +222,16 @@ export const useDraftStore = create<DraftStore>()(
           return { state: { ...state, draft: nextDraft }, version: 4 };
         }
 
+        if (version < 5) {
+          // Start persisting unlayerDesign in v5
+          return { state, version: 5 };
+        }
+
         return { state, version };
       },
       partialize: (state) => ({
         draft: state.draft,
+        unlayerDesign: state.unlayerDesign,
         viewMode: state.viewMode,
         // _hasHydrated is runtime-only and should not be persisted
       }),

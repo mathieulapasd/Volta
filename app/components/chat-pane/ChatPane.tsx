@@ -2,6 +2,7 @@
 
 import { LogOut, Paperclip, Send, User, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { type ChangeEvent, type ReactElement, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import { useChatStore } from "@/lib/store/useChatStore";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
 import Footer from "../Footer";
 
 export default function ChatPane(): ReactElement {
@@ -64,7 +64,26 @@ export default function ChatPane(): ReactElement {
       };
 
       appendMessage(userMessage);
+
+      // Persist user message to Supabase on submit
+      const supabase = await createClient();
+
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data?.user) {
+        return;
+      }
+
+      const { error: insertError } = await supabase.from("messages").insert({
+        auth_id: data.user.id,
+        message: userMessage.content,
+      });
+
+      if (insertError) {
+        console.error("[ChatPane] Failed to persist user message", insertError);
+      }
     }
+
     setInput("");
     setIsStreaming(true);
 
@@ -103,11 +122,23 @@ export default function ChatPane(): ReactElement {
       if (data.output) {
         const output = JSON.parse(data.output);
 
-        if (output.unlayer_design) {
+        console.log("output.unlayer_design", output.unlayer_design);
 
+        if (output.unlayer_design) {
           setUnlayerDesign(output.unlayer_design);
         } else {
           console.error("[ChatPane] No unlayer_design found in output");
+        }
+
+        if (typeof output.agent_response === "string" && output.agent_response.trim().length > 0) {
+          const assistantMessage: EmailMessage = {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: output.agent_response,
+            timestamp: new Date().toISOString(),
+          };
+
+          appendMessage(assistantMessage);
         }
       }
     } catch (error) {
@@ -181,17 +212,17 @@ export default function ChatPane(): ReactElement {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="h-15 border-border border-b bg-primary px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 mt-1">
-            <Image src="/Logo_Volta_Jaune.png" alt="Logo" width={80} height={40} />
-          </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut />
-            Se déconnecter
-          </Button>
-         
-          {/* <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div> */}
+      <div className="flex h-15 items-center justify-between border-border border-b bg-primary px-4">
+        <div className="mt-1 flex items-center gap-2">
+          <Image src="/Logo_Volta_Jaune.png" alt="Logo" width={80} height={40} />
         </div>
+        <Button variant="outline" onClick={handleLogout}>
+          <LogOut />
+          Se déconnecter
+        </Button>
+
+        {/* <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div> */}
+      </div>
 
       {/* Messages */}
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -211,7 +242,7 @@ export default function ChatPane(): ReactElement {
                 message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
               )}
             >
-              <p className="whitespace-pre-wrap wrap-break-words text-sm">{message.content}</p>
+              <p className="wrap-break-words whitespace-pre-wrap text-sm">{message.content}</p>
               <div className="mt-1 text-xs opacity-70" suppressHydrationWarning>
                 {new Date(message.timestamp).toLocaleTimeString()}
               </div>

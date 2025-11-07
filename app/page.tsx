@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import EmailBuilder from "./components/EmailBuilder";
-import Footer from "./components/Footer";
 
 export default async function Home() {
   const layout = (await cookies()).get("react-resizable-panels:layout");

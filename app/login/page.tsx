@@ -1,12 +1,12 @@
-import { login } from './actions'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { login } from "./actions";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-[calc(100svh-0px)] flex items-center justify-center p-4">
+    <div className="flex min-h-[calc(100svh-0px)] items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Connexion</CardTitle>
@@ -16,14 +16,7 @@ export default function LoginPage() {
           <form className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                required
-              />
+              <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Mot de passe</Label>
@@ -36,10 +29,10 @@ export default function LoginPage() {
             </div>
           </form>
         </CardContent>
-        <CardFooter className="justify-center text-sm text-muted-foreground">
+        <CardFooter className="justify-center text-muted-foreground text-sm">
           En continuant, vous acceptez nos Conditions d'utilisation.
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
