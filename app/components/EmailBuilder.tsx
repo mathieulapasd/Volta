@@ -1,5 +1,6 @@
 "use client";
 
+import JSZip from "jszip";
 import { Download } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
@@ -24,7 +25,6 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
 
   useEffect(() => {
     if (unlayerDesign) {
-      console.log("ICI", unlayerDesign);
       emailEditorRef.current?.editor?.loadDesign(unlayerDesign);
     }
   }, [unlayerDesign]);
@@ -74,28 +74,150 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
     };
   }, [clearEditorSelection]);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const emailEditor = emailEditorRef.current;
 
     if (emailEditor?.editor) {
-      emailEditor.editor.exportHtml((data) => {
-        if (data.html) {
-          // Export the HTML by creating a blob and triggering a download
-          const blob = new Blob([data.html], { type: "text/html" });
+      const getHtml = (): Promise<string> =>
+        new Promise((resolve) => {
+          emailEditor.editor?.exportHtml((data) => {
+            resolve(data.html || "");
+          });
+        });
 
-          const url = URL.createObjectURL(blob);
+      const html = await getHtml();
 
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = "email.html";
+      if (!html) {
+        return;
+      }
 
-          document.body.appendChild(link);
-          link.click();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
 
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+      const zip = new JSZip();
+      const imagesFolder = zip.folder("images");
+
+      const imageElements = Array.from(doc.querySelectorAll("img[src]")) as HTMLImageElement[];
+      const srcToFilename = new Map<string, string>();
+      const srcToBase64 = new Map<string, string>();
+
+      let imageIndex = 1;
+
+      const toBase64 = async (blob: Blob): Promise<string> => {
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const result = typeof reader.result === "string" ? reader.result : "";
+            const base64 = result.split(",")[1] || "";
+            resolve(base64);
+          };
+          reader.onerror = () => reject(new Error("Failed to read blob"));
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      const getExtensionFromMime = (mime: string): string => {
+        if (mime === "image/jpeg" || mime === "image/jpg") {
+          return "jpg";
+        }
+        if (mime === "image/png") {
+          return "png";
+        }
+        if (mime === "image/gif") {
+          return "gif";
+        }
+        if (mime === "image/webp") {
+          return "webp";
+        }
+        if (mime === "image/svg+xml") {
+          return "svg";
+        }
+        const slashIndex = mime.indexOf("/");
+        return slashIndex > -1 ? mime.slice(slashIndex + 1) : "bin";
+      };
+
+      const getNameFromUrl = (url: string): string => {
+        try {
+          const u = new URL(url);
+          const last = u.pathname.split("/").filter(Boolean).pop();
+          return last || "image";
+        } catch {
+          const parts = url.split("/").filter(Boolean);
+          return parts.pop() || "image";
+        }
+      };
+
+      const tasks = imageElements.map(async (img) => {
+        const src = img.getAttribute("src") || "";
+
+        if (!src || !imagesFolder) {
+          return;
+        }
+
+        if (srcToFilename.has(src)) {
+          const filename = srcToFilename.get(src) as string;
+          img.setAttribute("src", `images/${filename}`);
+          return;
+        }
+
+        try {
+          let base64 = "";
+          let filename = "";
+
+          if (src.startsWith("data:")) {
+            const mime = src.slice(5, src.indexOf(";")) || "application/octet-stream";
+            const ext = getExtensionFromMime(mime);
+            filename = `image-${imageIndex++}.${ext}`;
+            base64 = src.split(",")[1] || "";
+          } else {
+            const response = await fetch(src, { cache: "no-store" });
+            if (!response.ok) {
+              return;
+            }
+            const blob = await response.blob();
+            const mime = blob.type || "application/octet-stream";
+            const urlName = getNameFromUrl(src);
+            const dotExt = urlName.includes(".") ? urlName.split(".").pop() || "" : "";
+            const ext = dotExt || getExtensionFromMime(mime);
+            filename = `image-${imageIndex++}.${ext}`;
+            base64 = await toBase64(blob);
+          }
+
+          if (!base64) {
+            return;
+          }
+
+          srcToFilename.set(src, filename);
+          srcToBase64.set(src, base64);
+          img.setAttribute("src", `images/${filename}`);
+        } catch {
+          // If fetching fails, keep original src
         }
       });
+
+      await Promise.all(tasks);
+
+      // Write images to zip
+      for (const [src, filename] of srcToFilename.entries()) {
+        const base64 = srcToBase64.get(src);
+        if (base64 && imagesFolder) {
+          imagesFolder.file(filename, base64, { base64: true, date: new Date() });
+        }
+      }
+
+      // Add single HTML file
+      const finalHtml = doc.documentElement.outerHTML;
+      zip.file("index.html", finalHtml);
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "email-template.zip";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
   };
 
