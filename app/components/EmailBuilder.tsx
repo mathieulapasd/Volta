@@ -24,8 +24,16 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
   console.log("unlayerDesign", unlayerDesign);
 
   useEffect(() => {
+    const editor = emailEditorRef.current?.editor;
+
+    if (!editor) {
+      return;
+    }
+
     if (unlayerDesign) {
-      emailEditorRef.current?.editor?.loadDesign(unlayerDesign);
+      editor.loadDesign(unlayerDesign);
+    } else {
+      editor.loadDesign(sample as unknown as UnlayerDesign);
     }
   }, [unlayerDesign]);
 

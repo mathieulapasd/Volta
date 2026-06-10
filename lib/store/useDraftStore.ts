@@ -63,7 +63,7 @@ export const useDraftStore = create<DraftStore>()(
       },
 
       resetDraft: () => {
-        set({ draft: null });
+        set({ draft: null, unlayerDesign: null });
       },
 
       updateDraftHtml: (html) => {
