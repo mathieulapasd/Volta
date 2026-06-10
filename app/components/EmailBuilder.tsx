@@ -6,11 +6,11 @@ import { useCallback, useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { getDefaultUnlayerDesign } from "@/lib/defaultUnlayerDesign";
 import type { UnlayerDesign } from "@/lib/schemas";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { setCookie } from "@/lib/utils";
 import ChatPane from "./chat-pane/ChatPane";
-import sample from "./sample.json";
 
 export default function EmailBuilder(props: { defaultLayout: number[] }) {
   let t: number | undefined;
@@ -33,7 +33,13 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
     if (unlayerDesign) {
       editor.loadDesign(unlayerDesign);
     } else {
-      editor.loadDesign(sample as unknown as UnlayerDesign);
+      getDefaultUnlayerDesign()
+        .then((design) => {
+          editor.loadDesign(design);
+        })
+        .catch((error) => {
+          console.error("Failed to load default design", error);
+        });
     }
   }, [unlayerDesign]);
 
@@ -265,7 +271,13 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
               if (unlayerDesign) {
                 editor.loadDesign(unlayerDesign);
               } else {
-                editor.loadDesign(sample as unknown as UnlayerDesign);
+                getDefaultUnlayerDesign()
+                  .then((design) => {
+                    editor.loadDesign(design);
+                  })
+                  .catch((error) => {
+                    console.error("Failed to load default design", error);
+                  });
               }
             }}
           />
