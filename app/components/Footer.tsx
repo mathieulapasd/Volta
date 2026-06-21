@@ -7,24 +7,21 @@ export default function Footer() {
   const currentDraft = useDraftStore((s) => s.draft);
 
   return (
-    <div className="border-gray-200 border-t bg-gray-50 px-6 py-2 dark:border-gray-700 dark:bg-gray-800">
-      <div className="flex items-center justify-between text-gray-600 text-sm dark:text-gray-400">
-        <div className="flex items-center gap-4">
-          <span>
-            {currentDraft ? (
-              <div className="flex items-center gap-2">
-                <span className="text-green-600 dark:text-green-400">●</span>
-                E-mail chargé avec {currentDraft.manifest.blocks.length} blocs modifiables
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">○</span>
-                Aucun e-mail chargé
-              </div>
-            )}
-          </span>
+    <div className="border-border border-t bg-primary px-5 py-2">
+      <div className="flex items-center justify-between text-xs text-primary-foreground/60">
+        <div className="flex items-center gap-1.5">
+          {currentDraft ? (
+            <>
+              <span className="size-1.5 rounded-full bg-green-500" />
+              <span>{currentDraft.manifest.blocks.length} blocs chargés</span>
+            </>
+          ) : (
+            <>
+              <span className="size-1.5 rounded-full bg-gray-300" />
+              <span>Aucun e-mail chargé</span>
+            </>
+          )}
         </div>
-
         <ResetBuilderDialog />
       </div>
     </div>

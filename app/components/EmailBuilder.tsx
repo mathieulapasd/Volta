@@ -1,7 +1,7 @@
 "use client";
 
 import JSZip from "jszip";
-import { Download } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,9 @@ export default function EmailBuilder(props: EmailBuilderProps) {
 
   const isReady = useDraftStore((s) => s.isReady);
   const unlayerDesign = useDraftStore((s) => s.unlayerDesign);
+  const updateDraftHtml = useDraftStore((s) => s.updateDraftHtml);
+  const setDraft = useDraftStore((s) => s.setDraft);
+  const draft = useDraftStore((s) => s.draft);
 
   useEffect(() => {
     const editor = emailEditorRef.current?.editor;
@@ -256,9 +259,37 @@ export default function EmailBuilder(props: EmailBuilderProps) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={props.defaultLayout[1]} minSize={25} order={2}>
-        <div className="flex h-15 items-center justify-end border-border border-b bg-primary px-4">
-          <Button onClick={handleExport} variant="outline" size="sm">
-            <Download />
+        <div className="flex h-15 items-center justify-end gap-2 border-border border-b bg-primary px-4">
+          <Button
+            onClick={() => {
+              const editor = emailEditorRef.current?.editor;
+              if (!editor) {
+                window.open("/preview", "_blank");
+                return;
+              }
+              editor.exportHtml((data: { html: string }) => {
+                if (data.html) {
+                  if (draft) {
+                    updateDraftHtml(data.html);
+                  } else {
+                    setDraft({ html_inline: data.html, css_inline: "", manifest: { blocks: [] }, config: {}, assets: [] });
+                  }
+                }
+                window.open("/preview", "_blank");
+              });
+            }}
+            size="sm"
+            className="rounded-full border border-[#FCF5CA]/30 bg-transparent px-4 text-[#FCF5CA]/70 transition-all hover:border-[#FCF5CA] hover:bg-[#FCF5CA]/10 hover:text-[#FCF5CA]"
+          >
+            <Eye className="h-4 w-4" />
+            Prévisualiser
+          </Button>
+          <Button
+            onClick={handleExport}
+            size="sm"
+            className="rounded-full border border-[#FCF5CA]/30 bg-transparent px-4 text-[#FCF5CA]/70 transition-all hover:border-[#FCF5CA] hover:bg-[#FCF5CA]/10 hover:text-[#FCF5CA]"
+          >
+            <Download className="h-4 w-4" />
             Exporter ZIP
           </Button>
         </div>
