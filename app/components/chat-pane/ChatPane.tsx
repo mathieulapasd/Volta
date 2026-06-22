@@ -1,7 +1,9 @@
 "use client";
 
 import { LogOut, Paperclip, Send, User, X } from "lucide-react";
+import type { Route } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type ReactElement, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -13,14 +15,20 @@ import { useChatStore } from "@/lib/store/useChatStore";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import Footer from "../Footer";
+import WorkspaceBreadcrumb from "../workspace/WorkspaceBreadcrumb";
 
-export default function ChatPane(): ReactElement {
+interface ChatPaneProps {
+  chatId: string;
+  workspaceId: string;
+  workspaceName: string;
+  chatTitle: string;
+}
+
+export default function ChatPane({ chatId, workspaceId, workspaceName, chatTitle }: ChatPaneProps): ReactElement {
   const setUnlayerDesign = useDraftStore((s) => s.setUnlayerDesign);
 
   const messages = useChatStore((s) => s.messages);
   const appendMessage = useChatStore((s) => s.appendMessage);
-  // const incrementTokens = useChatStore((s) => s.incrementTokens);
 
   const router = useRouter();
 
@@ -42,7 +50,7 @@ export default function ChatPane(): ReactElement {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: necessary
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -55,18 +63,19 @@ export default function ChatPane(): ReactElement {
       return;
     }
 
+    const messageText = input.trim();
+
     if (hasMessage) {
       const userMessage: EmailMessage = {
         id: Date.now().toString(),
         role: "user",
-        content: input,
+        content: messageText,
         timestamp: new Date().toISOString(),
       };
 
       appendMessage(userMessage);
 
-      // Persist user message to Supabase on submit
-      const supabase = await createClient();
+      const supabase = createClient();
 
       const { data, error } = await supabase.auth.getUser();
 
@@ -76,6 +85,8 @@ export default function ChatPane(): ReactElement {
 
       const { error: insertError } = await supabase.from("messages").insert({
         auth_id: data.user.id,
+        chat_id: chatId,
+        role: "user",
         message: userMessage.content,
       });
 
@@ -89,9 +100,10 @@ export default function ChatPane(): ReactElement {
 
     try {
       const formData = new FormData();
+      formData.append("chat_id", chatId);
 
       if (hasMessage) {
-        formData.append("message", input);
+        formData.append("message", messageText);
       }
 
       for (const sf of selectedFiles) {
@@ -109,20 +121,8 @@ export default function ChatPane(): ReactElement {
 
       const data = await response.json();
 
-      // const assistantMessage: EmailMessage = {
-      //   id: (Date.now() + 1).toString(),
-      //   role: "assistant",
-      //   content: response.content,
-      //   timestamp: new Date().toISOString(),
-      // };
-
-      // appendMessage(assistantMessage);
-      // incrementTokens(response.tokenCount);
-
       if (data.output) {
         const output = JSON.parse(data.output);
-
-        console.log("output.unlayer_design", output.unlayer_design);
 
         if (output.unlayer_design) {
           setUnlayerDesign(output.unlayer_design);
@@ -202,7 +202,7 @@ export default function ChatPane(): ReactElement {
   };
 
   const handleLogout = async () => {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     await supabase.auth.signOut();
 
@@ -211,21 +211,41 @@ export default function ChatPane(): ReactElement {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex h-15 items-center justify-between border-border border-b bg-primary px-4">
-        <div className="mt-1 flex items-center gap-2">
-          <Image src="/Logo_Volta_Jaune.png" alt="Logo" width={80} height={40} />
-        </div>
-        <Button variant="outline" onClick={handleLogout}>
-          <LogOut />
-          Se déconnecter
-        </Button>
+      <WorkspaceBreadcrumb
+        items={[
+          { label: "Espaces de travail", href: "/" },
+          { label: workspaceName, href: `/workspace/${workspaceId}` },
+          { label: chatTitle },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link href={`/workspace/${workspaceId}` as Route}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
+                Retour aux chats
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              onClick={handleLogout}
+            >
+              <LogOut />
+              Se déconnecter
+            </Button>
+          </div>
+        }
+      />
 
-        {/* <div className="text-muted-foreground text-sm">Tokens: {tokenCount}</div> */}
-      </div>
-
-      {/* Messages */}
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        {messages.length === 0 && !isStreaming && (
+          <p className="text-center text-muted-foreground text-sm">
+            Décrivez l&apos;e-mail que vous souhaitez créer pour commencer.
+          </p>
+        )}
         {messages.map((message) => (
           <div
             key={message.id}
@@ -271,9 +291,7 @@ export default function ChatPane(): ReactElement {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <div className="space-y-3 border-border border-t p-4">
-        {/* Message Input */}
         <div className="flex space-x-2">
           <Textarea
             placeholder="Décrivez l'e-mail que vous souhaitez créer..."
@@ -317,7 +335,6 @@ export default function ChatPane(): ReactElement {
           </div>
         )}
       </div>
-      <Footer />
     </div>
   );
 }

@@ -1,38 +1,19 @@
 /**
  * Route TypeScript optimisée pour l'agent de marketing email
- *
- * CORRECTIONS APPORTÉES:
- * - Synchronisation des types avec l'API Python
- * - Gestion d'erreurs robuste et cohérente
- * - Support CORS complet
- * - Validation stricte des réponses
- * - Logging amélioré pour le debugging
- * - Fallbacks et retry logic
  */
 
 import { z } from "zod";
 import { unlayerDesignSchema } from "@/lib/schemas";
 import { createClient } from "@/utils/supabase/server";
 
-// Schema de validation pour les requêtes JSON
+const chatIdSchema = z.uuid();
+
 const JsonRequestBodySchema = z.object({
   message: z.string().min(1),
+  chat_id: chatIdSchema,
 });
 
-// Schema de validation pour la réponse de l'agent Python (synchronisé avec models.py)
 const emailGenerationResultSchema = z.object({
-  // html_inline: z.string(),
-  // manifest: z.object({
-  //   blocks: z.array(
-  //     z.object({
-  //       id: z.string(),
-  //       type: z.enum(["text", "image", "button", "section"]),
-  //       selector: z.string(),
-  //       editable: z.array(z.string()),
-  //       label: z.string().optional(),
-  //     })
-  //   ),
-  // }),
   unlayer_design: unlayerDesignSchema,
   config: z.object({
     width: z.string(),
@@ -44,24 +25,14 @@ const emailGenerationResultSchema = z.object({
     primaryColor: z.string(),
   }),
   agent_response: z.string(),
-  // assets: z.array(
-  //   z.object({
-  //     id: z.string(),
-  //     url: z.string(),
-  //     type: z.string(),
-  //     alt: z.string().optional(),
-  //   })
-  // ),
 });
 
-// Configuration de l'agent Python
 const AGENT_BASE_URL = process.env.EMAIL_AGENT_URL || "https://agent-volta-staging-427210296529.europe-west1.run.app";
 const REQUEST_TIMEOUT = Number.parseInt(process.env.EMAIL_AGENT_TIMEOUT || "300000", 10);
 const MAX_RETRIES = Number.parseInt(process.env.EMAIL_AGENT_MAX_RETRIES || "2", 10);
 
 const FETCH_URL = `${AGENT_BASE_URL}/generate-email-unlayer`;
 
-// Types TypeScript synchronisés avec Python
 type EmailGenerationResult = z.infer<typeof emailGenerationResultSchema>;
 
 interface AgentErrorResponse {
@@ -69,10 +40,8 @@ interface AgentErrorResponse {
   error?: string;
 }
 
-/**
- * Appelle l'agent Python avec retry logic et validation stricte
- */
 async function callEmailAgent(
+  chatId: string,
   message: string,
   files?: File[],
   retryCount = 0
@@ -95,9 +64,9 @@ async function callEmailAgent(
   }
 
   try {
-    // Préparer la requête
     const requestBody = {
       auth_id: user.id,
+      chat_id: chatId,
       message,
       tone: "journalistic",
       context:
@@ -107,8 +76,6 @@ async function callEmailAgent(
             }
           : undefined,
     };
-
-    // Client-side sync handles persisting user messages to avoid duplicates
 
     const response = await fetch(FETCH_URL, {
       method: "POST",
@@ -122,7 +89,6 @@ async function callEmailAgent(
 
     clearTimeout(timeoutId);
 
-    // Gestion des erreurs HTTP
     if (!response.ok) {
       let errorMessage = `Agent error ${response.status}`;
 
@@ -130,14 +96,13 @@ async function callEmailAgent(
         const errorData: AgentErrorResponse = await response.json();
         errorMessage = errorData.detail || errorData.error || errorMessage;
       } catch {
-        // Si on ne peut pas parser l'erreur, utiliser le message par défaut
+        // use default error message
       }
 
-      // Retry pour les erreurs 5xx (sauf 504 timeout)
       if (response.status >= 500 && response.status !== 504 && retryCount < MAX_RETRIES) {
         console.warn(`[EmailAgent] Server error ${response.status}, retrying in 1s...`, errorMessage);
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        return callEmailAgent(message, files, retryCount + 1);
+        return callEmailAgent(chatId, message, files, retryCount + 1);
       }
 
       return {
@@ -147,10 +112,7 @@ async function callEmailAgent(
       };
     }
 
-    // Parser et valider la réponse
     const rawData = await response.json();
-
-    // Validation stricte avec Zod
     const validationResult = emailGenerationResultSchema.safeParse(rawData);
 
     if (!validationResult.success) {
@@ -164,11 +126,27 @@ async function callEmailAgent(
       };
     }
 
-    await supabase.from("messages").insert({
+    const { error: messageError } = await supabase.from("messages").insert({
       auth_id: user.id,
-      unlayer_design: JSON.stringify(validationResult.data.unlayer_design),
+      chat_id: chatId,
+      role: "assistant",
       message: validationResult.data.agent_response,
+      unlayer_design: validationResult.data.unlayer_design,
     });
+
+    if (messageError) {
+      console.error("[EmailAgent] Failed to persist assistant message", messageError);
+    }
+
+    const { error: chatError } = await supabase
+      .from("chats")
+      .update({ unlayer_design: validationResult.data.unlayer_design })
+      .eq("id", chatId)
+      .eq("auth_id", user.id);
+
+    if (chatError) {
+      console.error("[EmailAgent] Failed to update chat design", chatError);
+    }
 
     return {
       success: true,
@@ -187,14 +165,13 @@ async function callEmailAgent(
         };
       }
 
-      // Retry pour les erreurs réseau
       if (
         retryCount < MAX_RETRIES &&
         (error.message.includes("fetch") || error.message.includes("network") || error.message.includes("ECONNREFUSED"))
       ) {
         console.warn("[EmailAgent] Network error, retrying in 1s...", error.message);
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        return callEmailAgent(message, files, retryCount + 1);
+        return callEmailAgent(chatId, message, files, retryCount + 1);
       }
 
       console.error("[EmailAgent] Error:", error.message);
@@ -213,9 +190,6 @@ async function callEmailAgent(
   }
 }
 
-/**
- * Headers CORS appropriés
- */
 function getCorsHeaders(): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -225,11 +199,7 @@ function getCorsHeaders(): Record<string, string> {
   };
 }
 
-/**
- * Convertit la réponse de l'agent Python au format attendu par builder-crm
- */
 function convertAgentResponseToBuilderFormat(agentData: EmailGenerationResult) {
-  // Mapper font_family vers le format enum attendu
   const fontMapping: Record<string, string> = {
     Arial: "arial",
     Helvetica: "helvetica",
@@ -240,9 +210,7 @@ function convertAgentResponseToBuilderFormat(agentData: EmailGenerationResult) {
 
   const font = fontMapping[agentData.config.font_family] || "arial";
 
-  // Pour l'instant, on retourne directement les données de l'agent
-  // en les structurant pour le frontend
-  const builderFormat = {
+  return {
     unlayer_design: agentData.unlayer_design,
     config: {
       font: font,
@@ -252,20 +220,38 @@ function convertAgentResponseToBuilderFormat(agentData: EmailGenerationResult) {
       textColor: agentData.config.text_color,
       backgroundColor: agentData.config.background_color,
     },
-    // Surface agent chat response for UI consumption
     agent_response: agentData.agent_response,
   };
+}
 
-  return builderFormat;
+function parseChatId(raw: FormDataEntryValue | null): string | null {
+  if (typeof raw !== "string") {
+    return null;
+  }
+
+  const parsed = chatIdSchema.safeParse(raw);
+
+  return parsed.success ? parsed.data : null;
 }
 
 export async function POST(request: Request): Promise<Response> {
   try {
     const contentType = request.headers.get("content-type") ?? "";
 
-    // Handle multipart/form-data (message + multiple files)
     if (contentType.includes("multipart/form-data")) {
       const incomingForm = await request.formData();
+
+      const chatId = parseChatId(incomingForm.get("chat_id"));
+
+      if (!chatId) {
+        return Response.json(
+          { error: "Invalid form-data: chat_id is required" },
+          {
+            status: 400,
+            headers: getCorsHeaders(),
+          }
+        );
+      }
 
       const messageRaw = incomingForm.get("message");
       const message = typeof messageRaw === "string" ? messageRaw : "";
@@ -283,11 +269,9 @@ export async function POST(request: Request): Promise<Response> {
         );
       }
 
-      // Appeler l'agent
-      const result = await callEmailAgent(message, files);
+      const result = await callEmailAgent(chatId, message, files);
 
       if (result.success) {
-        // Convertir au format builder-crm et encapsuler dans output
         const builderData = convertAgentResponseToBuilderFormat(result.data);
 
         return Response.json(
@@ -310,7 +294,6 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Fallback: JSON body with message only
     const json = (await request.json()) as unknown;
     const parsed = JsonRequestBodySchema.safeParse(json);
 
@@ -324,11 +307,9 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Appeler l'agent
-    const result = await callEmailAgent(parsed.data.message);
+    const result = await callEmailAgent(parsed.data.chat_id, parsed.data.message);
 
     if (result.success) {
-      // Convertir au format builder-crm et encapsuler dans output
       const builderData = convertAgentResponseToBuilderFormat(result.data);
 
       return Response.json(
@@ -341,6 +322,7 @@ export async function POST(request: Request): Promise<Response> {
         }
       );
     }
+
     return Response.json(
       { error: result.error },
       {

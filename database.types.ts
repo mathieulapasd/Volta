@@ -7,34 +7,108 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
-      messages: {
+      chats: {
         Row: {
           auth_id: string
           created_at: string
-          id: number
-          message: string
+          id: string
+          title: string
           unlayer_design: Json | null
+          updated_at: string
+          workspace_id: string
         }
         Insert: {
           auth_id: string
           created_at?: string
-          id?: number
-          message: string
+          id?: string
+          title?: string
           unlayer_design?: Json | null
+          updated_at?: string
+          workspace_id: string
         }
         Update: {
           auth_id?: string
           created_at?: string
+          id?: string
+          title?: string
+          unlayer_design?: Json | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chats_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          auth_id: string
+          chat_id: string
+          created_at: string
+          id: number
+          message: string
+          role: string
+          unlayer_design: Json | null
+        }
+        Insert: {
+          auth_id: string
+          chat_id: string
+          created_at?: string
+          id?: number
+          message: string
+          role: string
+          unlayer_design?: Json | null
+        }
+        Update: {
+          auth_id?: string
+          chat_id?: string
+          created_at?: string
           id?: number
           message?: string
+          role?: string
           unlayer_design?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          auth_id: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          auth_id: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }

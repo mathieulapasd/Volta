@@ -12,16 +12,22 @@ import { useDraftStore } from "@/lib/store/useDraftStore";
 import { setCookie } from "@/lib/utils";
 import ChatPane from "./chat-pane/ChatPane";
 
-export default function EmailBuilder(props: { defaultLayout: number[] }) {
+interface EmailBuilderProps {
+  defaultLayout: number[];
+  chatId: string;
+  workspaceId: string;
+  workspaceName: string;
+  chatTitle: string;
+}
+
+export default function EmailBuilder(props: EmailBuilderProps) {
   let t: number | undefined;
 
   const emailEditorRef = useRef<EditorRef>(null);
   const editorHostRef = useRef<HTMLDivElement | null>(null);
 
-  const hasHydrated = useDraftStore((s) => s._hasHydrated);
+  const isReady = useDraftStore((s) => s.isReady);
   const unlayerDesign = useDraftStore((s) => s.unlayerDesign);
-
-  console.log("unlayerDesign", unlayerDesign);
 
   useEffect(() => {
     const editor = emailEditorRef.current?.editor;
@@ -60,7 +66,6 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
       return;
     }
 
-    // Simple and reliable: re-load current design, which clears selection
     instance.saveDesign((design: UnlayerDesign) => {
       instance.loadDesign(design);
     });
@@ -211,7 +216,6 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
 
       await Promise.all(tasks);
 
-      // Write images to zip
       for (const [src, filename] of srcToFilename.entries()) {
         const base64 = srcToBase64.get(src);
         if (base64 && imagesFolder) {
@@ -219,7 +223,6 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
         }
       }
 
-      // Add single HTML file
       const finalHtml = doc.documentElement.outerHTML;
       zip.file("index.html", finalHtml);
 
@@ -235,14 +238,19 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
     }
   };
 
-  if (!hasHydrated) {
+  if (!isReady) {
     return null;
   }
 
   return (
-    <ResizablePanelGroup direction="horizontal" onLayout={onLayout}>
+    <ResizablePanelGroup direction="horizontal" onLayout={onLayout} className="h-full w-full">
       <ResizablePanel defaultSize={props.defaultLayout[0]} minSize={25} order={1}>
-        <ChatPane />
+        <ChatPane
+          chatId={props.chatId}
+          workspaceId={props.workspaceId}
+          workspaceName={props.workspaceName}
+          chatTitle={props.chatTitle}
+        />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={props.defaultLayout[1]} minSize={25} order={2}>
@@ -257,7 +265,8 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
             ref={emailEditorRef}
             minHeight="95vh"
             options={{
-              locale: "en-US",
+              projectId: Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID),
+              locale: "fr-FR",
               translations: {
                 "en-US": {
                   "tools.tabs.content": "Contenu",
@@ -267,7 +276,6 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
               },
             }}
             onReady={(editor) => {
-              console.log("onReady", unlayerDesign);
               if (unlayerDesign) {
                 editor.loadDesign(unlayerDesign);
               } else {
@@ -281,7 +289,6 @@ export default function EmailBuilder(props: { defaultLayout: number[] }) {
               }
             }}
           />
-          {/* <div className="absolute bottom-0 right-0 bg-gray-50 w-106 h-9" /> */}
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>

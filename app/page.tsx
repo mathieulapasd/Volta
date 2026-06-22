@@ -1,18 +1,8 @@
-import { cookies } from "next/headers";
-import EmailBuilder from "./components/EmailBuilder";
+import { listWorkspaces } from "@/app/actions/workspace";
+import WorkspaceList from "@/app/components/workspace/WorkspaceList";
 
-export default async function Home() {
-  const layout = (await cookies()).get("react-resizable-panels:layout");
+export default async function HomePage() {
+  const workspaces = await listWorkspaces();
 
-  let defaultLayout = [50, 50];
-
-  if (layout) {
-    defaultLayout = JSON.parse(decodeURIComponent(layout.value));
-  }
-
-  return (
-    <main className="flex h-screen bg-background">
-      <EmailBuilder defaultLayout={defaultLayout} />
-    </main>
-  );
+  return <WorkspaceList workspaces={workspaces} />;
 }
