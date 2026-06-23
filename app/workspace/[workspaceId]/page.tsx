@@ -1,20 +1,26 @@
-import { notFound } from "next/navigation";
-import { getWorkspace, listChats } from "@/app/actions/workspace";
-import ChatList from "@/app/components/workspace/ChatList";
+import type { Route } from "next";
+import { notFound, redirect } from "next/navigation";
+import { z } from "zod";
+import { createClient } from "@/utils/supabase/server";
 
-interface WorkspacePageProps {
+interface LegacyWorkspacePageProps {
   params: Promise<{ workspaceId: string }>;
 }
 
-export default async function WorkspacePage({ params }: WorkspacePageProps) {
+export default async function LegacyWorkspacePage({ params }: LegacyWorkspacePageProps) {
   const { workspaceId } = await params;
-  const workspace = await getWorkspace(workspaceId);
 
-  if (!workspace) {
+  if (!z.uuid().safeParse(workspaceId).success) {
     notFound();
   }
 
-  const chats = await listChats(workspaceId);
+  const supabase = await createClient();
 
-  return <ChatList workspace={workspace} chats={chats} />;
+  const { data } = await supabase.from("workspaces").select("company_id").eq("id", workspaceId).maybeSingle();
+
+  if (!data) {
+    notFound();
+  }
+
+  redirect(`/company/${data.company_id}/workspace/${workspaceId}` as Route);
 }

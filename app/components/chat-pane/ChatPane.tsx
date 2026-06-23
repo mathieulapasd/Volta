@@ -18,13 +18,20 @@ import { createClient } from "@/utils/supabase/client";
 import WorkspaceBreadcrumb from "../workspace/WorkspaceBreadcrumb";
 
 interface ChatPaneProps {
+  companyId: string;
   chatId: string;
   workspaceId: string;
   workspaceName: string;
   chatTitle: string;
 }
 
-export default function ChatPane({ chatId, workspaceId, workspaceName, chatTitle }: ChatPaneProps): ReactElement {
+export default function ChatPane({
+  companyId,
+  chatId,
+  workspaceId,
+  workspaceName,
+  chatTitle,
+}: ChatPaneProps): ReactElement {
   const setUnlayerDesign = useDraftStore((s) => s.setUnlayerDesign);
 
   const messages = useChatStore((s) => s.messages);
@@ -66,15 +73,6 @@ export default function ChatPane({ chatId, workspaceId, workspaceName, chatTitle
     const messageText = input.trim();
 
     if (hasMessage) {
-      const userMessage: EmailMessage = {
-        id: Date.now().toString(),
-        role: "user",
-        content: messageText,
-        timestamp: new Date().toISOString(),
-      };
-
-      appendMessage(userMessage);
-
       const supabase = createClient();
 
       const { data, error } = await supabase.auth.getUser();
@@ -83,8 +81,19 @@ export default function ChatPane({ chatId, workspaceId, workspaceName, chatTitle
         return;
       }
 
+      const userMessage: EmailMessage = {
+        id: Date.now().toString(),
+        role: "user",
+        content: messageText,
+        timestamp: new Date().toISOString(),
+        authorEmail: data.user.email,
+      };
+
+      appendMessage(userMessage);
+
       const { error: insertError } = await supabase.from("messages").insert({
         auth_id: data.user.id,
+        author_email: data.user.email ?? null,
         chat_id: chatId,
         role: "user",
         message: userMessage.content,
@@ -213,13 +222,13 @@ export default function ChatPane({ chatId, workspaceId, workspaceName, chatTitle
     <div className="flex h-full flex-col">
       <WorkspaceBreadcrumb
         items={[
-          { label: "Espaces de travail", href: "/" },
-          { label: workspaceName, href: `/workspace/${workspaceId}` },
+          { label: "Espaces de travail", href: `/company/${companyId}` },
+          { label: workspaceName, href: `/company/${companyId}/workspace/${workspaceId}` },
           { label: chatTitle },
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Link href={`/workspace/${workspaceId}` as Route}>
+            <Link href={`/company/${companyId}/workspace/${workspaceId}` as Route}>
               <Button
                 variant="outline"
                 size="sm"
@@ -263,8 +272,11 @@ export default function ChatPane({ chatId, workspaceId, workspaceName, chatTitle
               )}
             >
               <p className="wrap-break-words whitespace-pre-wrap text-sm">{message.content}</p>
-              <div className="mt-1 text-xs opacity-70" suppressHydrationWarning>
-                {new Date(message.timestamp).toLocaleTimeString()}
+              <div className="mt-1 flex items-center gap-2 text-xs opacity-70" suppressHydrationWarning>
+                {message.role === "user" && message.authorEmail && (
+                  <span className="max-w-40 truncate">{message.authorEmail}</span>
+                )}
+                <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
               </div>
             </Card>
             {message.role === "user" && (

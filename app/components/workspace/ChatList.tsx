@@ -13,21 +13,22 @@ import EntityTile from "./EntityTile";
 import WorkspaceBreadcrumb from "./WorkspaceBreadcrumb";
 
 interface ChatListProps {
+  companyId: string;
   workspace: Tables<"workspaces">;
   chats: Tables<"chats">[];
 }
 
-export default function ChatList({ workspace, chats }: ChatListProps): ReactElement {
+export default function ChatList({ companyId, workspace, chats }: ChatListProps): ReactElement {
   const router = useRouter();
-  const chatBasePath = `/workspace/${workspace.id}/chat`;
+  const chatBasePath = `/company/${companyId}/workspace/${workspace.id}/chat`;
 
   const { items, isCreating, createEntity, renameEntity, deleteEntity } = useOptimisticChatList(chats, {
     createAction: createChatAction,
     renameAction: renameChatAction,
     deleteAction: deleteChatAction,
-    buildCreateInput: () => ({ workspaceId: workspace.id }),
-    buildRenameInput: (id, title) => ({ id, workspaceId: workspace.id, title }),
-    buildDeleteInput: (id) => ({ id, workspaceId: workspace.id }),
+    buildCreateInput: () => ({ companyId, workspaceId: workspace.id }),
+    buildRenameInput: (id, title) => ({ id, companyId, workspaceId: workspace.id, title }),
+    buildDeleteInput: (id) => ({ id, companyId, workspaceId: workspace.id }),
     messages: {
       created: "Chat créé",
       renamed: "Chat renommé",
@@ -40,7 +41,9 @@ export default function ChatList({ workspace, chats }: ChatListProps): ReactElem
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <WorkspaceBreadcrumb items={[{ label: "Espaces de travail", href: "/" }, { label: workspace.name }]} />
+      <WorkspaceBreadcrumb
+        items={[{ label: "Espaces de travail", href: `/company/${companyId}` }, { label: workspace.name }]}
+      />
 
       <main className="mx-auto w-full max-w-6xl flex-1 p-6">
         <div className="mb-6">

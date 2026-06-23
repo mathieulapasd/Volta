@@ -45,6 +45,7 @@ export const emailMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.string(),
   timestamp: z.iso.datetime(),
+  authorEmail: z.string().optional(),
 });
 
 const emailBlockSchema = z.object({

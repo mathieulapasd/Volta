@@ -50,9 +50,57 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      company_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           auth_id: string
+          author_email: string | null
           chat_id: string
           created_at: string
           id: number
@@ -62,6 +110,7 @@ export type Database = {
         }
         Insert: {
           auth_id: string
+          author_email?: string | null
           chat_id: string
           created_at?: string
           id?: number
@@ -71,6 +120,7 @@ export type Database = {
         }
         Update: {
           auth_id?: string
+          author_email?: string | null
           chat_id?: string
           created_at?: string
           id?: number
@@ -91,6 +141,7 @@ export type Database = {
       workspaces: {
         Row: {
           auth_id: string
+          company_id: string
           created_at: string
           id: string
           name: string
@@ -98,6 +149,7 @@ export type Database = {
         }
         Insert: {
           auth_id: string
+          company_id: string
           created_at?: string
           id?: string
           name?: string
@@ -105,19 +157,39 @@ export type Database = {
         }
         Update: {
           auth_id?: string
+          company_id?: string
           created_at?: string
           id?: string
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "workspaces_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_chat_member: {
+        Args: { p_chat_id: string }
+        Returns: boolean
+      }
+      is_company_member: {
+        Args: { p_company_id: string }
+        Returns: boolean
+      }
+      is_workspace_member: {
+        Args: { p_workspace_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

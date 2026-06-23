@@ -14,6 +14,7 @@ import ChatPane from "./chat-pane/ChatPane";
 
 interface EmailBuilderProps {
   defaultLayout: number[];
+  companyId: string;
   chatId: string;
   workspaceId: string;
   workspaceName: string;
@@ -246,6 +247,7 @@ export default function EmailBuilder(props: EmailBuilderProps) {
     <ResizablePanelGroup direction="horizontal" onLayout={onLayout} className="h-full w-full">
       <ResizablePanel defaultSize={props.defaultLayout[0]} minSize={25} order={1}>
         <ChatPane
+          companyId={props.companyId}
           chatId={props.chatId}
           workspaceId={props.workspaceId}
           workspaceName={props.workspaceName}

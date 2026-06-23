@@ -128,6 +128,7 @@ async function callEmailAgent(
 
     const { error: messageError } = await supabase.from("messages").insert({
       auth_id: user.id,
+      author_email: user.email ?? null,
       chat_id: chatId,
       role: "assistant",
       message: validationResult.data.agent_response,
@@ -141,8 +142,7 @@ async function callEmailAgent(
     const { error: chatError } = await supabase
       .from("chats")
       .update({ unlayer_design: validationResult.data.unlayer_design })
-      .eq("id", chatId)
-      .eq("auth_id", user.id);
+      .eq("id", chatId);
 
     if (chatError) {
       console.error("[EmailAgent] Failed to update chat design", chatError);

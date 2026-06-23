@@ -5,6 +5,7 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import type { ReactElement } from "react";
 import { createWorkspaceAction, deleteWorkspaceAction, renameWorkspaceAction } from "@/app/actions/workspace-mutations";
+import CompanySwitcher from "@/app/components/company/CompanySwitcher";
 import { Button } from "@/components/ui/button";
 import type { Tables } from "@/database.types";
 import { useOptimisticEntityList } from "@/lib/workspace/use-optimistic-entities";
@@ -15,19 +16,21 @@ import EntityTile from "./EntityTile";
 import WorkspaceBreadcrumb from "./WorkspaceBreadcrumb";
 
 interface WorkspaceListProps {
+  companyId: string;
+  companies: Tables<"companies">[];
   workspaces: Tables<"workspaces">[];
 }
 
-export default function WorkspaceList({ workspaces }: WorkspaceListProps): ReactElement {
+export default function WorkspaceList({ companyId, companies, workspaces }: WorkspaceListProps): ReactElement {
   const router = useRouter();
 
   const { items, isCreating, createEntity, renameEntity, deleteEntity } = useOptimisticEntityList(workspaces, {
     createAction: createWorkspaceAction,
     renameAction: renameWorkspaceAction,
     deleteAction: deleteWorkspaceAction,
-    buildCreateInput: () => ({}),
-    buildRenameInput: (id, name) => ({ id, name }),
-    buildDeleteInput: (id) => ({ id }),
+    buildCreateInput: () => ({ companyId }),
+    buildRenameInput: (id, name) => ({ id, companyId, name }),
+    buildDeleteInput: (id) => ({ id, companyId }),
     messages: {
       created: "Espace de travail créé",
       renamed: "Espace de travail renommé",
@@ -45,14 +48,17 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps): React
     <div className="flex min-h-screen flex-col bg-background">
       <WorkspaceBreadcrumb
         actions={
-          <Button
-            variant="outline"
-            className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-            onClick={handleLogout}
-          >
-            <LogOut />
-            Se déconnecter
-          </Button>
+          <div className="flex items-center gap-2">
+            <CompanySwitcher companies={companies} currentCompanyId={companyId} />
+            <Button
+              variant="outline"
+              className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              onClick={handleLogout}
+            >
+              <LogOut />
+              Se déconnecter
+            </Button>
+          </div>
         }
       />
 
@@ -69,7 +75,7 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps): React
           {items.map((workspace) => (
             <EntityTile
               key={workspace.id}
-              href={`/workspace/${workspace.id}` as Route}
+              href={`/company/${companyId}/workspace/${workspace.id}` as Route}
               icon={<FolderOpen className="size-8 shrink-0 text-primary" />}
               name={workspace.name}
               onRename={(name) => renameEntity(workspace.id, name)}

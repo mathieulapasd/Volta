@@ -1,65 +1,26 @@
-import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
-import { getChat, getWorkspace } from "@/app/actions/workspace";
-import EmailBuilder from "@/app/components/EmailBuilder";
-import ChatInitializer from "@/app/components/workspace/ChatInitializer";
-import { getDefaultUnlayerDesign } from "@/lib/defaultUnlayerDesign";
-import type { UnlayerDesign } from "@/lib/schemas";
-import { unlayerDesignSchema } from "@/lib/schemas";
+import type { Route } from "next";
+import { notFound, redirect } from "next/navigation";
+import { z } from "zod";
+import { createClient } from "@/utils/supabase/server";
 
-interface ChatBuilderPageProps {
+interface LegacyChatPageProps {
   params: Promise<{ workspaceId: string; chatId: string }>;
 }
 
-async function resolveUnlayerDesign(raw: unknown): Promise<UnlayerDesign | null> {
-  if (!raw) {
-    return null;
-  }
-
-  const parsed = unlayerDesignSchema.safeParse(raw);
-
-  if (parsed.success) {
-    return parsed.data;
-  }
-
-  return null;
-}
-
-export default async function ChatBuilderPage({ params }: ChatBuilderPageProps) {
+export default async function LegacyChatPage({ params }: LegacyChatPageProps) {
   const { workspaceId, chatId } = await params;
 
-  const [workspace, chatData] = await Promise.all([getWorkspace(workspaceId), getChat(chatId, workspaceId)]);
-
-  if (!workspace || !chatData) {
+  if (!z.uuid().safeParse(workspaceId).success || !z.uuid().safeParse(chatId).success) {
     notFound();
   }
 
-  const layout = (await cookies()).get("react-resizable-panels:layout");
+  const supabase = await createClient();
 
-  let defaultLayout = [50, 50];
+  const { data } = await supabase.from("workspaces").select("company_id").eq("id", workspaceId).maybeSingle();
 
-  if (layout) {
-    defaultLayout = JSON.parse(decodeURIComponent(layout.value));
+  if (!data) {
+    notFound();
   }
 
-  let unlayerDesign = await resolveUnlayerDesign(chatData.chat.unlayer_design);
-
-  if (!unlayerDesign) {
-    unlayerDesign = await getDefaultUnlayerDesign();
-  }
-
-  return (
-    <>
-      <ChatInitializer messages={chatData.messages} unlayerDesign={unlayerDesign} />
-      <main className="flex h-screen bg-background">
-        <EmailBuilder
-          defaultLayout={defaultLayout}
-          chatId={chatId}
-          workspaceId={workspaceId}
-          workspaceName={workspace.name}
-          chatTitle={chatData.chat.title}
-        />
-      </main>
-    </>
-  );
+  redirect(`/company/${data.company_id}/workspace/${workspaceId}/chat/${chatId}` as Route);
 }
