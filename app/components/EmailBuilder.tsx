@@ -272,7 +272,7 @@ export default function EmailBuilder(props: EmailBuilderProps) {
                   if (draft) {
                     updateDraftHtml(data.html);
                   } else {
-                    setDraft({ html_inline: data.html, css_inline: "", manifest: { blocks: [] }, config: {}, assets: [] });
+                    setDraft({ html_inline: data.html, css_inline: "", manifest: { blocks: [] }, config: { font: "arial", primaryColor: "#007bff" }, assets: [] });
                   }
                 }
                 window.open("/preview", "_blank");
@@ -296,10 +296,80 @@ export default function EmailBuilder(props: EmailBuilderProps) {
         <div ref={editorHostRef}>
           <EmailEditor
             ref={emailEditorRef}
+            projectId={Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID)}
             minHeight="95vh"
             options={{
-              projectId: Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID),
               locale: "fr-FR",
+              customCSS: [
+                `.blockbuilder-branding { display: none !important; }`,
+                `.toolbar {
+                  background: oklch(0.255 0.1136 261.47) !important;
+                  border-bottom: 1px solid rgba(252, 245, 202, 0.15) !important;
+                }`,
+                `.toolbar-left {
+                  flex: 1 !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 2px !important;
+                }`,
+                `.toolbar-right { flex: 1 !important; justify-content: flex-end !important; }`,
+                `.toolbar .toolbar-button,
+                [data-key="undo"],
+                [data-key="redo"] {
+                  color: #FCF5CA !important;
+                  border-radius: 999px !important;
+                  width: 32px !important;
+                  height: 28px !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  background: transparent !important;
+                  box-shadow: none !important;
+                  border: none !important;
+                }`,
+                `.toolbar .toolbar-button:not(.disabled):hover {
+                  color: rgba(252, 245, 202, 0.9) !important;
+                  background: rgba(252, 245, 202, 0.1) !important;
+                }`,
+                `.toolbar .toolbar-button.disabled {
+                  color: #FCF5CA !important;
+                  opacity: 0.35 !important;
+                  cursor: not-allowed !important;
+                }`,
+                `.toolbar .separator-container { display: none !important; }`,
+                `.toolbar-right { visibility: hidden !important; }`,
+                `.toolbar-center {
+                  display: flex !important;
+                  align-items: center;
+                  gap: 2px;
+                  background: rgba(252, 245, 202, 0.05) !important;
+                  border: 1px solid rgba(252, 245, 202, 0.2) !important;
+                  border-radius: 999px !important;
+                  padding: 3px !important;
+                }`,
+                `.toolbar-center .device-button {
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  width: 32px !important;
+                  height: 28px !important;
+                  border-radius: 999px !important;
+                  border: none !important;
+                  background: transparent !important;
+                  color: rgba(252, 245, 202, 0.5) !important;
+                  cursor: pointer !important;
+                  transition: all 0.15s ease !important;
+                  box-shadow: none !important;
+                }`,
+                `.toolbar-center .device-button:hover {
+                  color: rgba(252, 245, 202, 0.9) !important;
+                  background: rgba(252, 245, 202, 0.1) !important;
+                }`,
+                `.toolbar-center .device-button.selected {
+                  background: #FCF5CA !important;
+                  color: #1a2c5b !important;
+                }`,
+              ],
               translations: {
                 "en-US": {
                   "tools.tabs.content": "Contenu",
