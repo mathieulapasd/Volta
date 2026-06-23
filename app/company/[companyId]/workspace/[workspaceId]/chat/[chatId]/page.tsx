@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { getChat, getWorkspace } from "@/app/actions/workspace";
 import EmailBuilder from "@/app/components/EmailBuilder";
 import ChatInitializer from "@/app/components/workspace/ChatInitializer";
-import { getDefaultUnlayerDesign } from "@/lib/defaultUnlayerDesign";
 import type { UnlayerDesign } from "@/lib/schemas";
 import { unlayerDesignSchema } from "@/lib/schemas";
 
@@ -45,11 +44,9 @@ export default async function ChatBuilderPage({ params }: ChatBuilderPageProps) 
     defaultLayout = JSON.parse(decodeURIComponent(layout.value));
   }
 
-  let unlayerDesign = await resolveUnlayerDesign(chatData.chat.unlayer_design);
-
-  if (!unlayerDesign) {
-    unlayerDesign = await getDefaultUnlayerDesign();
-  }
+  // When no design is saved yet, leave it null and let EmailBuilder build the
+  // default on the client (relative asset URLs cannot be fetched on the server).
+  const unlayerDesign = await resolveUnlayerDesign(chatData.chat.unlayer_design);
 
   return (
     <>

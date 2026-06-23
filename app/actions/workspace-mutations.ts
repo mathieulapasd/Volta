@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { Tables } from "@/database.types";
 import { assertCompanyMembership, assertWorkspaceInCompany } from "@/lib/company/access";
@@ -59,8 +58,6 @@ export const createWorkspaceAction = authActionClient
       throw new Error(error?.message ?? "Échec de la création");
     }
 
-    revalidatePath(`/company/${parsedInput.companyId}`);
-
     return data satisfies Tables<"workspaces">;
   });
 
@@ -76,9 +73,6 @@ export const renameWorkspaceAction = authActionClient.schema(renameSchema).actio
   if (error) {
     throw new Error(error.message);
   }
-
-  revalidatePath(`/company/${parsedInput.companyId}`);
-  revalidatePath(`/company/${parsedInput.companyId}/workspace/${parsedInput.id}`);
 });
 
 export const deleteWorkspaceAction = authActionClient.schema(idSchema).action(async ({ parsedInput, ctx }) => {
@@ -93,8 +87,6 @@ export const deleteWorkspaceAction = authActionClient.schema(idSchema).action(as
   if (error) {
     throw new Error(error.message);
   }
-
-  revalidatePath(`/company/${parsedInput.companyId}`);
 });
 
 export const createChatAction = authActionClient.schema(createChatSchema).action(async ({ parsedInput, ctx }) => {
@@ -115,8 +107,6 @@ export const createChatAction = authActionClient.schema(createChatSchema).action
     throw new Error(error?.message ?? "Échec de la création");
   }
 
-  revalidatePath(`/company/${parsedInput.companyId}/workspace/${parsedInput.workspaceId}`);
-
   return data satisfies Tables<"chats">;
 });
 
@@ -132,8 +122,6 @@ export const renameChatAction = authActionClient.schema(renameChatSchema).action
   if (error) {
     throw new Error(error.message);
   }
-
-  revalidatePath(`/company/${parsedInput.companyId}/workspace/${parsedInput.workspaceId}`);
 });
 
 export const deleteChatAction = authActionClient.schema(chatMutationSchema).action(async ({ parsedInput, ctx }) => {
@@ -148,6 +136,4 @@ export const deleteChatAction = authActionClient.schema(chatMutationSchema).acti
   if (error) {
     throw new Error(error.message);
   }
-
-  revalidatePath(`/company/${parsedInput.companyId}/workspace/${parsedInput.workspaceId}`);
 });

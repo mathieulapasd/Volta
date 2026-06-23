@@ -57,6 +57,10 @@ export default function EntityTile({
       className="group relative h-36 cursor-pointer gap-0 py-4 transition-colors hover:bg-muted/50"
       onClick={handleCardClick}
       onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) {
+          return;
+        }
+
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           handleNavigate();
@@ -69,28 +73,33 @@ export default function EntityTile({
       <CardContent className="flex h-full flex-col justify-between px-4">
         <div className="flex items-start justify-between gap-2">
           {icon}
+          {!disabled && (
+            <div data-tile-action>
+              <DeleteEntityDialog
+                entityLabel={deleteEntityLabel}
+                cascadeDescription={deleteDescription}
+                onConfirm={onDelete}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+                    aria-label={deleteAriaLabel}
+                  >
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                }
+              />
+            </div>
+          )}
+        </div>
+        {disabled ? (
+          <span className="truncate font-medium text-muted-foreground">{name}</span>
+        ) : (
           <div data-tile-action>
-            <DeleteEntityDialog
-              entityLabel={deleteEntityLabel}
-              cascadeDescription={deleteDescription}
-              onConfirm={onDelete}
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 opacity-0 transition-opacity group-hover:opacity-100"
-                  aria-label={deleteAriaLabel}
-                  disabled={disabled}
-                >
-                  <Trash2 className="size-4 text-destructive" />
-                </Button>
-              }
-            />
+            <EditableName value={name} onSave={onRename} />
           </div>
-        </div>
-        <div data-tile-action>
-          <EditableName value={name} onSave={onRename} />
-        </div>
+        )}
       </CardContent>
     </Card>
   );

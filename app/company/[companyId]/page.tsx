@@ -18,5 +18,5 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
 
   const workspaces = await listWorkspaces(companyId);
 
-  return <WorkspaceList companyId={companyId} companies={companies} workspaces={workspaces} />;
+  return <WorkspaceList companyId={companyId} workspaces={workspaces} />;
 }

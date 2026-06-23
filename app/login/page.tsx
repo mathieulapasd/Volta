@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "./actions";
+import SubmitButton from "./SubmitButton";
 
 export default function LoginPage() {
   return (
@@ -23,9 +23,7 @@ export default function LoginPage() {
               <Input id="password" name="password" type="password" autoComplete="current-password" required />
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              <Button type="submit" formAction={login} className="w-full">
-                Se connecter
-              </Button>
+              <SubmitButton formAction={login} />
             </div>
           </form>
         </CardContent>

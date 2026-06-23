@@ -14,7 +14,6 @@ interface EditableNameProps {
 export default function EditableName({ value, onSave, className, inputClassName }: EditableNameProps): ReactElement {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const [isSaving, setIsSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,7 +32,7 @@ export default function EditableName({ value, onSave, className, inputClassName 
     setIsEditing(false);
   };
 
-  const save = async () => {
+  const save = () => {
     const trimmed = draft.trim();
 
     if (!trimmed || trimmed === value) {
@@ -41,17 +40,15 @@ export default function EditableName({ value, onSave, className, inputClassName 
       return;
     }
 
-    setIsSaving(true);
-
-    try {
-      await onSave(trimmed);
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
-    }
+    setIsEditing(false);
+    onSave(trimmed).catch(() => {
+      // Errors are surfaced via the rename action's toast/rollback.
+    });
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+
     if (event.key === "Enter") {
       event.preventDefault();
       save();
@@ -68,7 +65,6 @@ export default function EditableName({ value, onSave, className, inputClassName 
       <Input
         ref={inputRef}
         value={draft}
-        disabled={isSaving}
         onChange={(event) => setDraft(event.target.value)}
         onBlur={() => {
           save();

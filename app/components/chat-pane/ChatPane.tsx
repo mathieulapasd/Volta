@@ -1,10 +1,9 @@
 "use client";
 
-import { LogOut, Paperclip, Send, User, X } from "lucide-react";
+import { Paperclip, Send, User, X } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { type ChangeEvent, type ReactElement, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,8 +35,6 @@ export default function ChatPane({
 
   const messages = useChatStore((s) => s.messages);
   const appendMessage = useChatStore((s) => s.appendMessage);
-
-  const router = useRouter();
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -210,14 +207,6 @@ export default function ChatPane({
     setSelectedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-
-    await supabase.auth.signOut();
-
-    router.push("/login");
-  };
-
   return (
     <div className="flex h-full flex-col">
       <WorkspaceBreadcrumb
@@ -227,25 +216,15 @@ export default function ChatPane({
           { label: chatTitle },
         ]}
         actions={
-          <div className="flex items-center gap-2">
-            <Link href={`/company/${companyId}/workspace/${workspaceId}` as Route}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-              >
-                Retour aux chats
-              </Button>
-            </Link>
+          <Link href={`/company/${companyId}/workspace/${workspaceId}` as Route}>
             <Button
               variant="outline"
+              size="sm"
               className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-              onClick={handleLogout}
             >
-              <LogOut />
-              Se déconnecter
+              Retour aux chats
             </Button>
-          </div>
+          </Link>
         }
       />
 

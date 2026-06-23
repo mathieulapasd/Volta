@@ -1,7 +1,7 @@
 "use client";
 
 import { useAction } from "next-safe-action/hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface NamedEntity {
@@ -25,6 +25,14 @@ function getErrorMessage(error: { serverError?: unknown }): string {
   return "Une erreur est survenue";
 }
 
+function hasError(result: unknown): boolean {
+  if (!result || typeof result !== "object") {
+    return false;
+  }
+
+  return "serverError" in result || "validationErrors" in result;
+}
+
 export function useOptimisticEntityList<T extends NamedEntity>(
   initialItems: T[],
   config: {
@@ -34,48 +42,66 @@ export function useOptimisticEntityList<T extends NamedEntity>(
     buildCreateInput: () => Record<string, unknown>;
     buildRenameInput: (id: string, name: string) => Record<string, unknown>;
     buildDeleteInput: (id: string) => Record<string, unknown>;
+    createTemp: () => T;
     messages: EntityListMessages;
   }
 ) {
   const [items, setItems] = useState(initialItems);
+  const [isCreating, setIsCreating] = useState(false);
+  const pendingTempId = useRef<string | null>(null);
 
   useEffect(() => {
-    setItems(initialItems);
+    setItems((prev) => {
+      const tempItems = prev.filter((item) => item.id.startsWith("temp-"));
+
+      if (tempItems.length === 0) {
+        return initialItems;
+      }
+
+      return [...tempItems, ...initialItems];
+    });
   }, [initialItems]);
 
-  const { execute: createEntity, isPending: isCreating } = useAction(
-    config.createAction as Parameters<typeof useAction>[0],
-    {
-      onSuccess: ({ data }) => {
-        if (data) {
-          setItems((prev) => {
-            if (prev.some((item) => item.id === (data as T).id)) {
-              return prev;
-            }
+  const { executeAsync: createAsync } = useAction(config.createAction as Parameters<typeof useAction>[0]);
+  const { executeAsync: renameAsync } = useAction(config.renameAction as Parameters<typeof useAction>[0]);
+  const { executeAsync: deleteAsync } = useAction(config.deleteAction as Parameters<typeof useAction>[0]);
 
-            return [data as T, ...prev];
-          });
-        }
+  const createEntity = async () => {
+    const temp = config.createTemp();
+    pendingTempId.current = temp.id;
 
-        toast.success(config.messages.created);
-      },
-      onError: ({ error }) => {
-        toast.error(getErrorMessage(error));
-      },
+    setItems((prev) => [temp, ...prev]);
+    setIsCreating(true);
+    toast.success(config.messages.created);
+
+    try {
+      const result = await createAsync(config.buildCreateInput());
+
+      if (hasError(result)) {
+        setItems((prev) => prev.filter((item) => item.id !== temp.id));
+        toast.error(getErrorMessage(result as { serverError?: unknown }));
+        return;
+      }
+
+      const data = (result as { data?: T } | undefined)?.data;
+
+      if (data) {
+        setItems((prev) => {
+          if (prev.some((item) => item.id === data.id)) {
+            return prev.filter((item) => item.id !== temp.id);
+          }
+
+          return prev.map((item) => (item.id === temp.id ? data : item));
+        });
+      }
+    } catch {
+      setItems((prev) => prev.filter((item) => item.id !== temp.id));
+      toast.error("Une erreur est survenue");
+    } finally {
+      pendingTempId.current = null;
+      setIsCreating(false);
     }
-  );
-
-  const { executeAsync: renameAsync } = useAction(config.renameAction as Parameters<typeof useAction>[0], {
-    onError: ({ error }) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
-
-  const { executeAsync: deleteAsync } = useAction(config.deleteAction as Parameters<typeof useAction>[0], {
-    onError: ({ error }) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
+  };
 
   const renameEntity = async (id: string, name: string) => {
     const previous = items;
@@ -84,12 +110,10 @@ export function useOptimisticEntityList<T extends NamedEntity>(
 
     const result = await renameAsync(config.buildRenameInput(id, name));
 
-    if (result?.serverError || result?.validationErrors) {
+    if (hasError(result)) {
       setItems(previous);
-      return;
+      toast.error(getErrorMessage(result as { serverError?: unknown }));
     }
-
-    toast.success(config.messages.renamed);
   };
 
   const deleteEntity = async (id: string) => {
@@ -99,18 +123,16 @@ export function useOptimisticEntityList<T extends NamedEntity>(
 
     const result = await deleteAsync(config.buildDeleteInput(id));
 
-    if (result?.serverError || result?.validationErrors) {
+    if (hasError(result)) {
       setItems(previous);
-      return;
+      toast.error(getErrorMessage(result as { serverError?: unknown }));
     }
-
-    toast.success(config.messages.deleted);
   };
 
   return {
     items,
     isCreating,
-    createEntity: () => createEntity(config.buildCreateInput()),
+    createEntity,
     renameEntity,
     deleteEntity,
   };
@@ -130,38 +152,39 @@ export function useOptimisticChatList<T extends { id: string; title: string }>(
   }
 ) {
   const [items, setItems] = useState(initialItems);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     setItems(initialItems);
   }, [initialItems]);
 
-  const { execute: createEntity, isPending: isCreating } = useAction(
-    config.createAction as Parameters<typeof useAction>[0],
-    {
-      onSuccess: ({ data }) => {
-        if (data) {
-          config.onCreated(data as T);
-        }
+  const { executeAsync: createAsync } = useAction(config.createAction as Parameters<typeof useAction>[0]);
+  const { executeAsync: renameAsync } = useAction(config.renameAction as Parameters<typeof useAction>[0]);
+  const { executeAsync: deleteAsync } = useAction(config.deleteAction as Parameters<typeof useAction>[0]);
 
-        toast.success(config.messages.created);
-      },
-      onError: ({ error }) => {
-        toast.error(getErrorMessage(error));
-      },
+  const createEntity = async () => {
+    setIsCreating(true);
+    toast.success(config.messages.created);
+
+    try {
+      const result = await createAsync(config.buildCreateInput());
+
+      if (hasError(result)) {
+        toast.error(getErrorMessage(result as { serverError?: unknown }));
+        return;
+      }
+
+      const data = (result as { data?: T } | undefined)?.data;
+
+      if (data) {
+        config.onCreated(data);
+      }
+    } catch {
+      toast.error("Une erreur est survenue");
+    } finally {
+      setIsCreating(false);
     }
-  );
-
-  const { executeAsync: renameAsync } = useAction(config.renameAction as Parameters<typeof useAction>[0], {
-    onError: ({ error }) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
-
-  const { executeAsync: deleteAsync } = useAction(config.deleteAction as Parameters<typeof useAction>[0], {
-    onError: ({ error }) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
+  };
 
   const renameEntity = async (id: string, title: string) => {
     const previous = items;
@@ -170,12 +193,10 @@ export function useOptimisticChatList<T extends { id: string; title: string }>(
 
     const result = await renameAsync(config.buildRenameInput(id, title));
 
-    if (result?.serverError || result?.validationErrors) {
+    if (hasError(result)) {
       setItems(previous);
-      return;
+      toast.error(getErrorMessage(result as { serverError?: unknown }));
     }
-
-    toast.success(config.messages.renamed);
   };
 
   const deleteEntity = async (id: string) => {
@@ -185,18 +206,16 @@ export function useOptimisticChatList<T extends { id: string; title: string }>(
 
     const result = await deleteAsync(config.buildDeleteInput(id));
 
-    if (result?.serverError || result?.validationErrors) {
+    if (hasError(result)) {
       setItems(previous);
-      return;
+      toast.error(getErrorMessage(result as { serverError?: unknown }));
     }
-
-    toast.success(config.messages.deleted);
   };
 
   return {
     items,
     isCreating,
-    createEntity: () => createEntity(config.buildCreateInput()),
+    createEntity,
     renameEntity,
     deleteEntity,
   };
