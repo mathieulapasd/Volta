@@ -3,12 +3,26 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 
 type DarkMode = "light" | "dark";
 
-const DEVICES = [
+interface Device {
+  id: string;
+  label: string;
+  width: string;
+}
+
+const DEVICES: { group: string; items: Device[] }[] = [
   {
     group: "Desktop",
     items: [
@@ -20,7 +34,7 @@ const DEVICES = [
   {
     group: "Tablette",
     items: [
-      { id: "ipad-pro", label: "iPad Pro 12.9\"", width: "1024px" },
+      { id: "ipad-pro", label: 'iPad Pro 12.9"', width: "1024px" },
       { id: "ipad", label: "iPad / iPad Air", width: "820px" },
       { id: "ipad-mini", label: "iPad Mini", width: "768px" },
     ],
@@ -35,7 +49,7 @@ const DEVICES = [
       { id: "pixel-7", label: "Google Pixel 7", width: "412px" },
     ],
   },
-] as const;
+];
 
 const ALL_DEVICES = DEVICES.flatMap((g) => g.items);
 
@@ -170,8 +184,8 @@ function buildIframeContent(html: string, client: EmailClient, darkMode: DarkMod
 
 export default function PreviewPage() {
   const draft = useDraftStore((s) => s.draft);
-  const hasHydrated = useDraftStore((s) => s._hasHydrated);
 
+  const [mounted, setMounted] = useState(false);
   const [deviceId, setDeviceId] = useState("desktop-1440");
   const [client, setClient] = useState<EmailClient>("default");
   const [darkMode, setDarkMode] = useState<DarkMode>("light");
@@ -179,6 +193,10 @@ export default function PreviewPage() {
 
   const html = draft?.html_inline ?? "";
   const device = ALL_DEVICES.find((d) => d.id === deviceId) ?? ALL_DEVICES[0];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -192,7 +210,9 @@ export default function PreviewPage() {
     return () => URL.revokeObjectURL(url);
   }, [html, client, darkMode]);
 
-  if (!hasHydrated) return null;
+  if (!mounted) {
+    return null;
+  }
 
   const clientLabel = EMAIL_CLIENTS.find((c) => c.id === client)?.label ?? "";
 
@@ -200,7 +220,6 @@ export default function PreviewPage() {
     <div className="flex h-screen flex-col bg-background">
       {/* Top bar */}
       <div className="flex h-15 shrink-0 items-center gap-3 border-border border-b bg-primary px-4">
-
         {/* Device dropdown */}
         <Select value={deviceId} onValueChange={setDeviceId}>
           <SelectTrigger className="w-52 rounded-full border border-[#FCF5CA]/30 bg-transparent text-[#FCF5CA]/70 transition-all hover:border-[#FCF5CA] hover:text-[#FCF5CA] focus:ring-0 [&>svg]:text-[#FCF5CA]/50">

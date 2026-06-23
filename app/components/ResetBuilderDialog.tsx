@@ -38,7 +38,10 @@ export default function ResetBuilderDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button size="sm" className="rounded-full border border-[#FCF5CA]/30 bg-transparent px-4 text-[#FCF5CA]/70 transition-all hover:border-[#FCF5CA] hover:bg-[#FCF5CA]/10 hover:text-[#FCF5CA]">
+        <Button
+          size="sm"
+          className="rounded-full border border-[#FCF5CA]/30 bg-transparent px-4 text-[#FCF5CA]/70 transition-all hover:border-[#FCF5CA] hover:bg-[#FCF5CA]/10 hover:text-[#FCF5CA]"
+        >
           Réinitialiser
         </Button>
       </AlertDialogTrigger>

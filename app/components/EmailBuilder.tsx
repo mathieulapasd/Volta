@@ -272,7 +272,13 @@ export default function EmailBuilder(props: EmailBuilderProps) {
                   if (draft) {
                     updateDraftHtml(data.html);
                   } else {
-                    setDraft({ html_inline: data.html, css_inline: "", manifest: { blocks: [] }, config: { font: "arial", primaryColor: "#007bff" }, assets: [] });
+                    setDraft({
+                      html_inline: data.html,
+                      css_inline: "",
+                      manifest: { blocks: [] },
+                      config: { font: "arial", primaryColor: "#007bff" },
+                      assets: [],
+                    });
                   }
                 }
                 window.open("/preview", "_blank");
@@ -301,7 +307,7 @@ export default function EmailBuilder(props: EmailBuilderProps) {
             options={{
               locale: "fr-FR",
               customCSS: [
-                `.blockbuilder-branding { display: none !important; }`,
+                ".blockbuilder-branding { display: none !important; }",
                 `.toolbar {
                   background: oklch(0.255 0.1136 261.47) !important;
                   border-bottom: 1px solid rgba(252, 245, 202, 0.15) !important;
@@ -312,7 +318,7 @@ export default function EmailBuilder(props: EmailBuilderProps) {
                   align-items: center !important;
                   gap: 2px !important;
                 }`,
-                `.toolbar-right { flex: 1 !important; justify-content: flex-end !important; }`,
+                ".toolbar-right { flex: 1 !important; justify-content: flex-end !important; }",
                 `.toolbar .toolbar-button,
                 [data-key="undo"],
                 [data-key="redo"] {
@@ -336,8 +342,8 @@ export default function EmailBuilder(props: EmailBuilderProps) {
                   opacity: 0.35 !important;
                   cursor: not-allowed !important;
                 }`,
-                `.toolbar .separator-container { display: none !important; }`,
-                `.toolbar-right { visibility: hidden !important; }`,
+                ".toolbar .separator-container { display: none !important; }",
+                ".toolbar-right { visibility: hidden !important; }",
                 `.toolbar-center {
                   display: flex !important;
                   align-items: center;

@@ -262,7 +262,9 @@ export default function ChatPane({
                 {message.role === "user" && message.authorEmail && (
                   <span className="max-w-40 truncate">{message.authorEmail}</span>
                 )}
-                <span>{new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                <span>
+                  {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
               </div>
             </div>
             {message.role === "user" && (

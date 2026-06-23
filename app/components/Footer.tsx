@@ -8,7 +8,7 @@ export default function Footer() {
 
   return (
     <div className="border-border border-t bg-primary px-5 py-2">
-      <div className="flex items-center justify-between text-xs text-primary-foreground/60">
+      <div className="flex items-center justify-between text-primary-foreground/60 text-xs">
         <div className="flex items-center gap-1.5">
           {currentDraft ? (
             <>
