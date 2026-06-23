@@ -7,7 +7,6 @@ import Link from "next/link";
 import { type ChangeEvent, type ReactElement, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import type { EmailMessage } from "@/lib/schemas";
 import { useChatStore } from "@/lib/store/useChatStore";
@@ -228,7 +227,7 @@ export default function ChatPane({
         }
       />
 
-      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+      <div className="flex-1 space-y-5 overflow-y-auto bg-white p-5">
         {messages.length === 0 && !isStreaming && (
           <p className="text-center text-muted-foreground text-sm">
             Décrivez l&apos;e-mail que vous souhaitez créer pour commencer.
@@ -237,53 +236,80 @@ export default function ChatPane({
         {messages.map((message) => (
           <div
             key={message.id}
-            className={cn("flex items-start space-x-3", message.role === "user" ? "justify-end" : "justify-start")}
+            className={cn("flex items-end gap-2.5", message.role === "user" ? "justify-end" : "justify-start")}
           >
             {message.role === "assistant" && (
-              <div className="flex size-9 items-center justify-center rounded-full bg-primary">
-                <Image src="/Logo_chat_Volta.png" alt="Logo" width={40} height={40} />
+              <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary shadow-sm">
+                <Image src="/Logo_chat_Volta.png" alt="Logo" width={32} height={32} />
               </div>
             )}
-            <Card
+            <div
               className={cn(
-                "max-w-8/10 p-3",
-                message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                "max-w-[78%] rounded-2xl px-4 py-2.5 shadow-sm",
+                message.role === "user"
+                  ? "rounded-br-sm bg-primary text-primary-foreground"
+                  : "rounded-bl-sm bg-white text-gray-800"
               )}
             >
-              <p className="wrap-break-words whitespace-pre-wrap text-sm">{message.content}</p>
-              <div className="mt-1 flex items-center gap-2 text-xs opacity-70" suppressHydrationWarning>
+              <p className="wrap-break-words whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+              <div
+                className={cn(
+                  "mt-1 flex items-center gap-2 text-[11px]",
+                  message.role === "user" ? "justify-end text-primary-foreground/60" : "text-gray-400"
+                )}
+                suppressHydrationWarning
+              >
                 {message.role === "user" && message.authorEmail && (
                   <span className="max-w-40 truncate">{message.authorEmail}</span>
                 )}
-                <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+                <span>
+                  {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
               </div>
-            </Card>
+            </div>
             {message.role === "user" && (
-              <div className="flex size-8 items-center justify-center rounded-full bg-muted">
-                <User className="size-4" />
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 shadow-sm">
+                <User className="size-4 text-primary" />
               </div>
             )}
           </div>
         ))}
         {isStreaming && (
-          <div className="flex items-start space-x-3">
-            <div className="flex size-8 items-center justify-center rounded-full bg-primary">
+          <div className="flex items-end gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary shadow-sm">
               <Image src="/Logo_chat_Volta.png" alt="Logo" width={32} height={32} />
             </div>
-            <Card className="bg-muted p-3">
-              <div className="flex space-x-1">
-                <div className="size-2 animate-bounce rounded-full bg-current" />
-                <div className="size-2 animate-bounce rounded-full bg-current" style={{ animationDelay: "0.1s" }} />
-                <div className="size-2 animate-bounce rounded-full bg-current" style={{ animationDelay: "0.2s" }} />
+            <div className="rounded-2xl rounded-bl-sm bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-1">
+                <div className="size-2 animate-bounce rounded-full bg-gray-400" />
+                <div className="size-2 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "0.15s" }} />
+                <div className="size-2 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "0.3s" }} />
               </div>
-            </Card>
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="space-y-3 border-border border-t p-4">
-        <div className="flex space-x-2">
+      <div className="space-y-2 border-border border-t bg-primary p-4">
+        {selectedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2 pb-1">
+            {selectedFiles.map((sf) => (
+              <Badge key={sf.id} variant="secondary" className="flex items-center gap-1 bg-[#FCF5CA] text-gray-700">
+                <span className="max-w-48 truncate text-xs">{sf.file.name}</span>
+                <button
+                  type="button"
+                  aria-label="Supprimer le fichier"
+                  onClick={() => removeFile(sf.id)}
+                  className="rounded p-0.5 hover:bg-[#e8dfa0]"
+                >
+                  <X className="size-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+        <div className="flex items-end gap-2">
           <Textarea
             placeholder="Décrivez l'e-mail que vous souhaitez créer..."
             value={input}
@@ -294,37 +320,26 @@ export default function ChatPane({
                 handleSend();
               }
             }}
-            className="max-h-48 min-h-15 flex-1 resize-none"
+            className="max-h-48 min-h-[52px] flex-1 resize-none rounded-2xl border-[#e8dfa0] bg-white text-sm shadow-sm focus-visible:ring-[#FCF5CA]"
           />
           <input ref={fileInputRef} type="file" multiple onChange={onFilesSelected} className="hidden" />
-          <Button onClick={openFileDialog} variant="outline" size="sm" disabled={isStreaming}>
-            <Paperclip />
+          <Button
+            onClick={openFileDialog}
+            disabled={isStreaming}
+            size="icon"
+            className="size-10 shrink-0 rounded-full border border-[#e8dfa0] bg-white text-gray-500 shadow-sm hover:bg-[#FCF5CA] hover:text-gray-700"
+          >
+            <Paperclip className="size-4" />
           </Button>
           <Button
             onClick={handleSend}
             disabled={(!input.trim() && selectedFiles.length === 0) || isStreaming}
-            size="sm"
+            size="icon"
+            className="size-10 shrink-0 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-40"
           >
-            <Send />
+            <Send className="size-4" />
           </Button>
         </div>
-        {selectedFiles.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {selectedFiles.map((sf) => (
-              <Badge key={sf.id} variant="secondary" className="flex items-center gap-1">
-                <span className="max-w-48 truncate text-xs">{sf.file.name}</span>
-                <button
-                  type="button"
-                  aria-label="Supprimer le fichier"
-                  onClick={() => removeFile(sf.id)}
-                  className="rounded p-0.5 hover:bg-muted"
-                >
-                  <X className="size-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

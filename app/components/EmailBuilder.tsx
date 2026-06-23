@@ -1,7 +1,7 @@
 "use client";
 
 import JSZip from "jszip";
-import { Download } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import EmailEditor, { type EditorRef } from "react-email-editor";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,9 @@ export default function EmailBuilder(props: EmailBuilderProps) {
 
   const isReady = useDraftStore((s) => s.isReady);
   const unlayerDesign = useDraftStore((s) => s.unlayerDesign);
+  const updateDraftHtml = useDraftStore((s) => s.updateDraftHtml);
+  const setDraft = useDraftStore((s) => s.setDraft);
+  const draft = useDraftStore((s) => s.draft);
 
   useEffect(() => {
     const editor = emailEditorRef.current?.editor;
@@ -256,19 +259,123 @@ export default function EmailBuilder(props: EmailBuilderProps) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={props.defaultLayout[1]} minSize={25} order={2}>
-        <div className="flex h-15 items-center justify-end border-border border-b bg-primary px-4">
-          <Button onClick={handleExport} variant="outline" size="sm">
-            <Download />
+        <div className="flex h-15 items-center justify-end gap-2 border-border border-b bg-primary px-4">
+          <Button
+            onClick={() => {
+              const editor = emailEditorRef.current?.editor;
+              if (!editor) {
+                window.open("/preview", "_blank");
+                return;
+              }
+              editor.exportHtml((data: { html: string }) => {
+                if (data.html) {
+                  if (draft) {
+                    updateDraftHtml(data.html);
+                  } else {
+                    setDraft({
+                      html_inline: data.html,
+                      css_inline: "",
+                      manifest: { blocks: [] },
+                      config: { font: "arial", primaryColor: "#007bff" },
+                      assets: [],
+                    });
+                  }
+                }
+                window.open("/preview", "_blank");
+              });
+            }}
+            size="sm"
+            className="rounded-full border border-[#FCF5CA]/30 bg-transparent px-4 text-[#FCF5CA]/70 transition-all hover:border-[#FCF5CA] hover:bg-[#FCF5CA]/10 hover:text-[#FCF5CA]"
+          >
+            <Eye className="h-4 w-4" />
+            Prévisualiser
+          </Button>
+          <Button
+            onClick={handleExport}
+            size="sm"
+            className="rounded-full border border-[#FCF5CA]/30 bg-transparent px-4 text-[#FCF5CA]/70 transition-all hover:border-[#FCF5CA] hover:bg-[#FCF5CA]/10 hover:text-[#FCF5CA]"
+          >
+            <Download className="h-4 w-4" />
             Exporter ZIP
           </Button>
         </div>
         <div ref={editorHostRef}>
           <EmailEditor
             ref={emailEditorRef}
+            projectId={Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID)}
             minHeight="95vh"
             options={{
-              projectId: Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID),
               locale: "fr-FR",
+              customCSS: [
+                ".blockbuilder-branding { display: none !important; }",
+                `.toolbar {
+                  background: oklch(0.255 0.1136 261.47) !important;
+                  border-bottom: 1px solid rgba(252, 245, 202, 0.15) !important;
+                }`,
+                `.toolbar-left {
+                  flex: 1 !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 2px !important;
+                }`,
+                ".toolbar-right { flex: 1 !important; justify-content: flex-end !important; }",
+                `.toolbar .toolbar-button,
+                [data-key="undo"],
+                [data-key="redo"] {
+                  color: #FCF5CA !important;
+                  border-radius: 999px !important;
+                  width: 32px !important;
+                  height: 28px !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  background: transparent !important;
+                  box-shadow: none !important;
+                  border: none !important;
+                }`,
+                `.toolbar .toolbar-button:not(.disabled):hover {
+                  color: rgba(252, 245, 202, 0.9) !important;
+                  background: rgba(252, 245, 202, 0.1) !important;
+                }`,
+                `.toolbar .toolbar-button.disabled {
+                  color: #FCF5CA !important;
+                  opacity: 0.35 !important;
+                  cursor: not-allowed !important;
+                }`,
+                ".toolbar .separator-container { display: none !important; }",
+                ".toolbar-right { visibility: hidden !important; }",
+                `.toolbar-center {
+                  display: flex !important;
+                  align-items: center;
+                  gap: 2px;
+                  background: rgba(252, 245, 202, 0.05) !important;
+                  border: 1px solid rgba(252, 245, 202, 0.2) !important;
+                  border-radius: 999px !important;
+                  padding: 3px !important;
+                }`,
+                `.toolbar-center .device-button {
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  width: 32px !important;
+                  height: 28px !important;
+                  border-radius: 999px !important;
+                  border: none !important;
+                  background: transparent !important;
+                  color: rgba(252, 245, 202, 0.5) !important;
+                  cursor: pointer !important;
+                  transition: all 0.15s ease !important;
+                  box-shadow: none !important;
+                }`,
+                `.toolbar-center .device-button:hover {
+                  color: rgba(252, 245, 202, 0.9) !important;
+                  background: rgba(252, 245, 202, 0.1) !important;
+                }`,
+                `.toolbar-center .device-button.selected {
+                  background: #FCF5CA !important;
+                  color: #1a2c5b !important;
+                }`,
+              ],
               translations: {
                 "en-US": {
                   "tools.tabs.content": "Contenu",
