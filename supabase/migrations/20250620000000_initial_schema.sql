@@ -1,4 +1,4 @@
--- Initial schema for builder-crm (fresh Supabase project)
+-- Initial schema for Volta (fresh Supabase project)
 -- Run manually in Supabase SQL Editor or via `supabase db push`
 
 create extension if not exists "pgcrypto";

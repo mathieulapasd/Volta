@@ -99,7 +99,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
                   <tr>
                     <td style="padding: 20px; text-align: center; background-color: #f8f9fa;">
                       <p data-id="footer-text" style="margin: 0; font-size: 14px; color: #666666;">
-                        © 2025 Builder CRM. Tous droits réservés.
+                        © 2025 Volta. Tous droits réservés.
                       </p>
                     </td>
                   </tr>

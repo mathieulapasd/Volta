@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Builder CRM",
-  description: "Builder CRM",
+  title: "Volta",
+  description: "Volta",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

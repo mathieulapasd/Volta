@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "builder-crm",
+      "name": "volta",
       "dependencies": {
         "@ai-sdk/openai": "^2.0.62",
         "@ai-sdk/react": "^2.0.87",
