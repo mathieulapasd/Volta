@@ -305,7 +305,7 @@ export default function EmailBuilder(props: EmailBuilderProps) {
             projectId={Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID)}
             minHeight="95vh"
             options={{
-              locale: "fr-FR",
+              locale: "en-US",
               customCSS: [
                 ".blockbuilder-branding { display: none !important; }",
                 `.toolbar {
