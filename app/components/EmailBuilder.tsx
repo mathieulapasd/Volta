@@ -302,7 +302,7 @@ export default function EmailBuilder(props: EmailBuilderProps) {
         <div ref={editorHostRef}>
           <EmailEditor
             ref={emailEditorRef}
-            projectId={Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID) || 287763}
+            projectId={Number(process.env.NEXT_PUBLIC_UNLAYER_PROJECT_ID)}
             minHeight="95vh"
             options={{
               locale: "en-US",
