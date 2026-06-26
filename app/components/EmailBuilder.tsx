@@ -269,17 +269,7 @@ export default function EmailBuilder(props: EmailBuilderProps) {
               }
               editor.exportHtml((data: { html: string }) => {
                 if (data.html) {
-                  if (draft) {
-                    updateDraftHtml(data.html);
-                  } else {
-                    setDraft({
-                      html_inline: data.html,
-                      css_inline: "",
-                      manifest: { blocks: [] },
-                      config: { font: "arial", primaryColor: "#007bff" },
-                      assets: [],
-                    });
-                  }
+                  localStorage.setItem("volta-preview-html", data.html);
                 }
                 window.open("/preview", "_blank");
               });

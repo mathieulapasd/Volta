@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDraftStore } from "@/lib/store/useDraftStore";
 
 type DarkMode = "light" | "dark";
 
@@ -183,20 +182,20 @@ function buildIframeContent(html: string, client: EmailClient, darkMode: DarkMod
 }
 
 export default function PreviewPage() {
-  const draft = useDraftStore((s) => s.draft);
-
   const [mounted, setMounted] = useState(false);
+  const [html, setHtml] = useState("");
   const [deviceId, setDeviceId] = useState("desktop-1440");
   const [client, setClient] = useState<EmailClient>("default");
   const [darkMode, setDarkMode] = useState<DarkMode>("light");
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const html = draft?.html_inline ?? "";
-  const device = ALL_DEVICES.find((d) => d.id === deviceId) ?? ALL_DEVICES[0];
-
   useEffect(() => {
+    const saved = localStorage.getItem("volta-preview-html");
+    if (saved) setHtml(saved);
     setMounted(true);
   }, []);
+
+  const device = ALL_DEVICES.find((d) => d.id === deviceId) ?? ALL_DEVICES[0];
 
   useEffect(() => {
     const iframe = iframeRef.current;
