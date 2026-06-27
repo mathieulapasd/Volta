@@ -87,7 +87,7 @@ export const unlayerDesignSchema = z.object({
         id: z.string(),
         cells: z.array(z.number()),
         columns: z.array(z.any()),
-        values: z.object(),
+        values: z.record(z.string(), z.any()),
       })
     ),
     headers: z.array(z.any()).default([]).catch([]),
