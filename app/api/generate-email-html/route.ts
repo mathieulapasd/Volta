@@ -130,21 +130,31 @@ export async function POST(request: Request): Promise<Response> {
 
     const { html_inline, css_inline, manifest, config, agent_response } = validated.data;
 
-    // Persist message to Supabase
-    await supabase.from("messages").insert({
+    // Persist message sans html_inline (colonne non existante dans messages)
+    const { error: insertError } = await supabase.from("messages").insert({
       auth_id: user.id,
       chat_id: chatId,
       role: "assistant",
       message: agent_response,
-      html_inline,
     });
+    if (insertError) console.warn("[generate-email-html] Message insert warning:", insertError.message);
 
-    const draft = emailDraftSchema.parse({
+    const draftParsed = emailDraftSchema.safeParse({
       html_inline,
       css_inline,
       manifest,
       config: { font: config.font as "arial", primaryColor: config.primaryColor },
     });
+
+    if (!draftParsed.success) {
+      console.error("[generate-email-html] Draft parse error:", draftParsed.error);
+      // Retourner quand même le HTML brut si le manifeste pose problème
+      return Response.json(
+        { output: JSON.stringify({ draft: { html_inline, css_inline, manifest: { blocks: [] }, config: { font: "arial", primaryColor: config.primaryColor }, assets: [] }, agent_response }) },
+        { headers: getCorsHeaders() }
+      );
+    }
+    const draft = draftParsed.data;
 
     return Response.json(
       { output: JSON.stringify({ draft, agent_response }) },
