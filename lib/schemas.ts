@@ -51,8 +51,8 @@ export const emailMessageSchema = z.object({
 const emailBlockSchema = z.object({
   id: z.string(),
   type: z.enum(["text", "image", "button", "section"]),
-  selector: z.string(), // CSS selector using [data-id]
-  editable: z.array(attributeEnum),
+  selector: z.string(),
+  editable: z.array(z.string()), // permissif pour le flow HTML
   label: z.string().optional(),
 });
 

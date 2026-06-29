@@ -529,7 +529,7 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
       const next: Partial<Record<AttributeName, string>> = {};
 
       block.editable.forEach((attr) => {
-        next[attr] = getCurrentValue(element, attr);
+        next[attr as import("@/lib/schemas").AttributeName] = getCurrentValue(element, attr);
       });
 
       setAttrValues(next);
