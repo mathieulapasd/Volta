@@ -176,5 +176,17 @@ export function getCurrentValue(element: Element, attribute: string): string {
     return element.getAttribute("alt") || "";
   }
 
+  if (attribute === "fontStyle") {
+    const style = element.getAttribute("style") || "";
+    const match = style.match(/font-style:\s*([^;]+)/);
+    return match ? match[1].trim() : "normal";
+  }
+
+  if (attribute === "textDecoration") {
+    const style = element.getAttribute("style") || "";
+    const match = style.match(/text-decoration:\s*([^;]+)/);
+    return match ? match[1].trim() : "none";
+  }
+
   return element.getAttribute(attribute) || "";
 }

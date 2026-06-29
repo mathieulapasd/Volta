@@ -348,6 +348,56 @@ function BlockCustomizationContent(props: BlockCustomizationContentProps) {
             />
           </div>
         )}
+
+        {props.selectedBlock.editable.includes("fontStyle") && (
+          <div className="space-y-2">
+            <Label>Italique</Label>
+            <Button
+              variant={props.initialValues.fontStyle === "italic" ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                const next = props.initialValues.fontStyle === "italic" ? "normal" : "italic";
+                props.onFieldChange("fontStyle", next);
+                props.onFieldBlur("fontStyle");
+              }}
+              className="w-full"
+            >
+              <em>I</em>&nbsp;Italique
+            </Button>
+          </div>
+        )}
+
+        {props.selectedBlock.editable.includes("textDecoration") && (
+          <div className="space-y-2">
+            <Label>Décoration</Label>
+            <div className="flex gap-2">
+              <Button
+                variant={props.initialValues.textDecoration === "line-through" ? "default" : "outline"}
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  const next = props.initialValues.textDecoration === "line-through" ? "none" : "line-through";
+                  props.onFieldChange("textDecoration", next);
+                  props.onFieldBlur("textDecoration");
+                }}
+              >
+                <s>S</s>&nbsp;Barré
+              </Button>
+              <Button
+                variant={props.initialValues.textDecoration === "underline" ? "default" : "outline"}
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  const next = props.initialValues.textDecoration === "underline" ? "none" : "underline";
+                  props.onFieldChange("textDecoration", next);
+                  props.onFieldBlur("textDecoration");
+                }}
+              >
+                <u>U</u>&nbsp;Souligné
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </SheetContent>
   );
@@ -425,6 +475,12 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
           break;
         case "borderRadius":
           (element as HTMLElement).style.setProperty("border-radius", value);
+          break;
+        case "fontStyle":
+          (element as HTMLElement).style.setProperty("font-style", value);
+          break;
+        case "textDecoration":
+          (element as HTMLElement).style.setProperty("text-decoration", value);
           break;
         case "width": {
           const numeric = value.trim();

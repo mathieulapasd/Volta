@@ -12,6 +12,8 @@ const attributeEnum = z.enum([
   "target",
   "fontSize",
   "fontWeight",
+  "fontStyle",
+  "textDecoration",
   "textAlign",
   "lineHeight",
   "padding",
