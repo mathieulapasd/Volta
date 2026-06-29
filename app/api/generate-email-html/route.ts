@@ -110,11 +110,16 @@ export async function POST(request: Request): Promise<Response> {
     clearTimeout(timeout);
 
     if (!agentResponse.ok) {
-      const err = await agentResponse.json().catch(() => ({}));
-      return Response.json(
-        { error: (err as { detail?: string }).detail ?? `Agent error ${agentResponse.status}` },
-        { status: agentResponse.status, headers: getCorsHeaders() }
-      );
+      const rawText = await agentResponse.text().catch(() => "");
+      let detail = `Agent HTTP ${agentResponse.status}`;
+      try {
+        const err = JSON.parse(rawText);
+        detail = err.detail ?? err.error ?? detail;
+      } catch {
+        if (rawText) detail = rawText.slice(0, 400);
+      }
+      console.error("[generate-email-html] Agent error:", agentResponse.status, detail);
+      return Response.json({ error: detail }, { status: agentResponse.status, headers: getCorsHeaders() });
     }
 
     const raw = await agentResponse.json();
