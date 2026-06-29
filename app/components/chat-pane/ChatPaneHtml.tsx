@@ -121,7 +121,8 @@ export default function ChatPaneHtml({
       });
 
       if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
+        const errorBody = await response.text().catch(() => "");
+        throw new Error(`HTTP ${response.status}: ${errorBody}`);
       }
 
       const data = await response.json();
@@ -152,7 +153,7 @@ export default function ChatPaneHtml({
       const errorMessage: EmailMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Désolé, j'ai rencontré une erreur. Veuillez réessayer.",
+        content: `Erreur : ${error instanceof Error ? error.message : String(error)}`,
         timestamp: new Date().toISOString(),
       };
       appendMessage(errorMessage);
