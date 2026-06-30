@@ -2,10 +2,11 @@ import { z } from "zod";
 import { emailDraftSchema } from "@/lib/schemas";
 import { createClient } from "@/utils/supabase/server";
 
-// Aligné sur le timeout de l'agent (AbortController 300s plus bas) — sans ça,
-// Vercel coupe la fonction avant que la génération + validation LLM ait fini
-// (FUNCTION_INVOCATION_TIMEOUT). Nécessite un plan Vercel Pro ou supérieur.
-export const maxDuration = 300;
+// 60s = valeur max acceptée sur un plan Vercel Hobby (300 fait échouer le build
+// si le plan ne le permet pas). Sans cette config, Vercel coupe la fonction avant
+// la fin de la génération (FUNCTION_INVOCATION_TIMEOUT). À remonter à 300 si le
+// projet est sur un plan Pro et que 60s ne suffit pas.
+export const maxDuration = 60;
 
 const RequestSchema = z.object({
   message: z.string().min(1),
