@@ -19,11 +19,10 @@ import { SelectItem } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { debounce, rafThrottle } from "@/lib/debounce";
-import { getCurrentValue, getElement, sanitizeHtml } from "@/lib/emailEditing";
+import { getCurrentValue, getElement, getImageTarget, sanitizeHtml } from "@/lib/emailEditing";
 import type { AttributeName, EmailBlock } from "@/lib/schemas";
 import { useDraftStore } from "@/lib/store/useDraftStore";
 import { IsolatedColorInput } from "./ColorInput";
-import InlineEditor from "./InlineEditor";
 import { IsolatedSelect } from "./IsolatedSelect";
 import NumberInputWithUnitSelect from "./NumberInputWithUnitSelect";
 
@@ -416,7 +415,6 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
   const manifestRef = useRef(manifest);
 
   const [selectedBlock, setSelectedBlock] = useState<EmailBlock | null>(null);
-  const [inlineBlock, setInlineBlock] = useState<EmailBlock | null>(null);
   const [attrValues, setAttrValues] = useState<Partial<Record<AttributeName, string>>>({});
 
   const debouncedUpdateDraftHtml = useMemo(
@@ -483,23 +481,28 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
           (element as HTMLElement).style.setProperty("text-decoration", value);
           break;
         case "width": {
+          const target = getImageTarget(element) as HTMLElement;
           const numeric = value.trim();
           const css = /px$/i.test(numeric) ? numeric : `${numeric}px`;
 
-          (element as HTMLElement).style.setProperty("width", css);
-          (element as HTMLElement).setAttribute("width", numeric.replace(/px$/i, ""));
+          target.style.setProperty("width", css);
+          target.setAttribute("width", numeric.replace(/px$/i, ""));
           break;
         }
         case "height": {
+          const target = getImageTarget(element) as HTMLElement;
           const numeric = value.trim();
           const css = /px$/i.test(numeric) ? numeric : `${numeric}px`;
 
-          (element as HTMLElement).style.setProperty("height", css);
-          (element as HTMLElement).setAttribute("height", numeric.replace(/px$/i, ""));
+          target.style.setProperty("height", css);
+          target.setAttribute("height", numeric.replace(/px$/i, ""));
           break;
         }
         case "alt":
-          (element as HTMLElement).setAttribute("alt", value);
+          getImageTarget(element).setAttribute("alt", value);
+          break;
+        case "src":
+          getImageTarget(element).setAttribute("src", value);
           break;
         default:
           element.setAttribute(name, value);
@@ -566,12 +569,6 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
       if (!block) {
         return;
       }
-      // If text is editable and Shift is NOT pressed, start inline editing instead of opening sheet
-      if (block.editable.includes("text") && !event.data.shiftKey) {
-        setInlineBlock(block);
-
-        return;
-      }
 
       setSelectedBlock(block);
 
@@ -604,7 +601,6 @@ export default function BlockCustomization(props: BlockCustomizationProps) {
 
   return (
     <>
-      <InlineEditor iframeRef={props.iframeRef} request={inlineBlock} onFinish={() => setInlineBlock(null)} />
       <Sheet
         modal={false}
         open={!!selectedBlock}

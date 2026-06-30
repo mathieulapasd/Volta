@@ -17,6 +17,16 @@ export function getElement(iframe: HTMLIFrameElement | null, selector: string): 
   return iframe.contentDocument.querySelector(selector);
 }
 
+// When data-id is on an <a> wrapping an <img> (clickable image), src/alt/width/height
+// belong to the inner <img>, not the <a> itself.
+export function getImageTarget(element: Element): Element {
+  if (element.tagName === "A") {
+    return element.querySelector("img") ?? element;
+  }
+
+  return element;
+}
+
 // Get current value from an element for editing
 export function getCurrentValue(element: Element, attribute: string): string {
   if (attribute === "text") {
@@ -105,6 +115,7 @@ export function getCurrentValue(element: Element, attribute: string): string {
   }
 
   if (attribute === "width") {
+    element = getImageTarget(element);
     const attr = element.getAttribute("width");
 
     if (attr && /^\d+(?:\.\d+)?$/i.test(attr.trim())) {
@@ -139,6 +150,7 @@ export function getCurrentValue(element: Element, attribute: string): string {
   }
 
   if (attribute === "height") {
+    element = getImageTarget(element);
     const attr = element.getAttribute("height");
 
     if (attr && /^\d+(?:\.\d+)?$/i.test(attr.trim())) {
@@ -173,7 +185,11 @@ export function getCurrentValue(element: Element, attribute: string): string {
   }
 
   if (attribute === "alt") {
-    return element.getAttribute("alt") || "";
+    return getImageTarget(element).getAttribute("alt") || "";
+  }
+
+  if (attribute === "src") {
+    return getImageTarget(element).getAttribute("src") || "";
   }
 
   if (attribute === "fontStyle") {
