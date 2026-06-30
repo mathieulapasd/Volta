@@ -2,6 +2,11 @@ import { z } from "zod";
 import { emailDraftSchema } from "@/lib/schemas";
 import { createClient } from "@/utils/supabase/server";
 
+// Aligné sur le timeout de l'agent (AbortController 300s plus bas) — sans ça,
+// Vercel coupe la fonction avant que la génération + validation LLM ait fini
+// (FUNCTION_INVOCATION_TIMEOUT). Nécessite un plan Vercel Pro ou supérieur.
+export const maxDuration = 300;
+
 const RequestSchema = z.object({
   message: z.string().min(1),
   chat_id: z.uuid(),
